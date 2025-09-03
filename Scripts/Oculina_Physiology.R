@@ -16,38 +16,35 @@ library(rstatix)
 #install.packages("tidyr")
 library(tidyr)
 
+#read in metadata
+phys_meta <- read.csv(here("Data", "Physio_meta.csv"))
 
 #####Ash Free Dry Weight#####
 
 #load data
-avg_DW <- read.csv(here("Data", "Average_Dry_Weight.csv"))
 
-#code to calculate average dry weight per fragment
-#needed initially but not after writing average dry weight datasheet
-# #read in metadata
-# phys_meta <- read.csv(here("Data", "Physiology", "Physio_meta.csv"))
-# 
-# DW <- read.csv(here("Data", "Physiology", "Dry_Weight_Oki2025.csv"))
-# 
-# DW <- DW %>% left_join(phys_meta, by = "frag_ID")
-# 
-# #calculate dry weight
-# DW <- DW %>%
-#   mutate(dw_g_mL = dry_pan - pan_weight,
-#          dw_total_g = dw_g_mL*blastate_vol_mL,
-#          dw_g_cm2 = dw_total_g/SA_cm2,
-#          dw_mg_cm2 = dw_g_cm2*1000)
-# 
-# #average across the reps
-# avg_DW <- DW %>%
-#   group_by(frag_ID) %>%
-#   summarise(dw_g_mL = mean(dw_g_mL),
-#             dw_total_g = mean(dw_total_g),
-#             dw_g_cm2 = mean(dw_g_cm2),
-#             dw_mg_cm2 = mean(dw_mg_cm2)) %>%
-#   left_join(phys_meta, by = "frag_ID")
-# 
-# write.csv(avg_DW, here("Data", "Physiology", "Average_Dry_Weight.csv"), row.names = FALSE)
+DW <- read.csv(here("Data", "Physiology", "Dry_Weight_Oki2025.csv"))
+
+DW <- DW %>% left_join(phys_meta, by = "frag_ID")
+
+#calculate dry weight
+DW <- DW %>%
+  mutate(dw_g_mL = dry_pan - pan_weight,
+         dw_total_g = dw_g_mL*blastate_vol_mL,
+         dw_g_cm2 = dw_total_g/SA_cm2,
+         dw_mg_cm2 = dw_g_cm2*1000)
+
+#average across the reps
+avg_DW <- DW %>%
+  group_by(frag_ID) %>%
+  summarise(dw_g_mL = mean(dw_g_mL),
+            dw_total_g = mean(dw_total_g),
+            dw_g_cm2 = mean(dw_g_cm2),
+            dw_mg_cm2 = mean(dw_mg_cm2)) %>%
+  left_join(phys_meta, by = "frag_ID")
+
+write.csv(avg_DW, here("Data", "Physiology", "Average_Dry_Weight.csv"), row.names = FALSE)
+avg_DW <- read.csv(here("Data", "Average_Dry_Weight.csv"))
 
 ##boxplot by species
 #and add facet by morphology or stress (sensitive/tolerant)
