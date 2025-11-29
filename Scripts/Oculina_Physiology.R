@@ -4,6 +4,8 @@
 #Maya Powell & Jamie Long & Ella Hennessey
 #Last edited November 28th 2025
 
+#install.packages(c("performance", "here"))
+
 #load libraries
 library(tidyverse)
 library(here)
@@ -20,8 +22,9 @@ library(performance)
 #install.packages("ggpubr")
 library(ggpubr)
 
+
 #read in metadata
-phys_meta <- read.csv(here("Data", "Physio_meta.csv"))
+phys_meta <- read.csv(here("Data", "Nov_2024", "oculina_nov24_chla.csv"))
 
 #####Ash Free Dry Weight#####
 #load data
@@ -90,17 +93,23 @@ summary(DW.mod.stress)
 
 
 #read in dataframe
-sym_chla <- read.csv("sym_chla_oculina_seasonal.csv")
+sym_chla <- read.csv(here("Data", "Nov_2024", "oculina_nov24_chla.csv"))
+meta <- read.csv(here("Data", "Nov_2024", "oculina_nov24_metadata.csv"))
 
 #remove samples that have no data
+sym_chla <- sym_chla %>% 
+  left_join(meta, by = "sample_ID")
 sym_chla <- sym_chla %>% filter(full_ID != "A12-1124") 
+
+sym_chla %>% 
+  filter(full_ID == "A12-1124")
 #here A12 from Nov 24 has no surface area yet so we can't use it
 
 #you can check the classes of the variables using this as needed:
-#sapply(sym_chla, class)
+sapply(sym_chla, class)
 
-#convert any variables to correct classes as needed - see example here:
-#sym_chla <- sym_chla %>% mutate_at(c('ug_chla_cm'), as.numeric)
+#convert any variables to correct classes as needed - see example here
+sym_chla <- sym_chla %>% mutate_at(c('ug_chla_cm'), as.numeric)
 
 #info about variables - add notes that are helpful to you!
 #sa_colony = aposymbiotic/symbiotic original designation of the colony
@@ -132,7 +141,7 @@ sym_chla <- sym_chla %>% filter(full_ID != "A12-1124")
 sym_chla$timepoint <- factor(sym_chla$timepoint, levels=c('Nov_23', 'May_24', 'Nov_24'))
 
 ###PLOTS###
-
+#USING FOR 395
 #dot plot of chlorophyll a looking at all samples split and colored by apo_sym
 #also looking at the different time points
 chla_sa_point <- ggplot(sym_chla, aes(x = sample_ID, y=ug_chla_cm, color = sa_colony))+
@@ -144,7 +153,7 @@ chla_sa_point
 
 #@Ella - here's how to save a plot - it will save in your working directory folder
 #go through and save the rest of them by editing this line of code for each plot!
-ggsave(chla_sa_point, file = "chla_sa_point.pdf", h=10, w=10) #change height and width and resave as needed
+ggsave(chla_sa_point, file = "chla_sa_point.pdf", h=6, w=6) #change height and width and resave as needed
 
 #now look at it without apo & sym just seasonal
 chla_time_point <- ggplot(sym_chla, aes(x = sample_ID, y=ug_chla_cm, color = timepoint))+
@@ -154,6 +163,7 @@ chla_time_point <- ggplot(sym_chla, aes(x = sample_ID, y=ug_chla_cm, color = tim
   facet_grid(~timepoint, scales = "free")
 chla_time_point
 
+ggsave(chla_time_point, file = "chla_time_point.jpg", h=6, w=6)
 #boxplot of chla grouped by sym/apo and facet by time
 #this is interesting but u can see the original designation of the colonies as apo/sym doesn't seem to hold - look at it over time too
 chla_sa_box <- ggplot(sym_chla, aes(x = sa_colony, y=ug_chla_cm, fill = sa_colony))+
@@ -165,6 +175,7 @@ chla_sa_box <- ggplot(sym_chla, aes(x = sa_colony, y=ug_chla_cm, fill = sa_colon
   scale_fill_manual(values = c("tan","brown")) #ella change the colors here as you'd like
 chla_sa_box
 
+ggsave(chla_sa_box, file = "chla_sa_box.jpg", h=6, w=6)
 #boxplot of chla grouped by sym/apo and facet by time
 #within timepoint the apo/sym seems important for Nov 2023 and maybe even may 2024, but by Nov 24 - all colonies are pretty much apo again
 #also remember for Nov 24 we are looking at averages of sym & apo branches within colony
@@ -178,6 +189,7 @@ chla_sa_time_box <- ggplot(sym_chla, aes(x = sa_colony, y=ug_chla_cm, fill = sa_
   scale_fill_manual(values = c("tan","brown")) #ella change the colors here as you'd like
 chla_sa_time_box
 
+ggsave(chla_sa_time_box, file = "chla_sa_time_box.jpg", h=6, w=6)
 #boxplot of chla grouped by time only
 #just timepoint seems like it's a pretty effective predictor of chla in my opinion!
 #really cool to see the data like this and see that your Nov samples are matching Jamie's pretty well even with the split colonies
