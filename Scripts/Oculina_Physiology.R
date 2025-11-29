@@ -2,7 +2,7 @@
 ##### Coral Physiology Oculina Seasonal Project#####
 
 #Maya Powell & Jamie Long & Ella Hennessey
-#Last edited September 3rd 2025
+#Last edited November 28th 2025
 
 #load libraries
 library(tidyverse)
@@ -15,14 +15,16 @@ library(ggplot2)
 library(rstatix)
 #install.packages("tidyr")
 library(tidyr)
+#install.packages("performance")
+library(performance)
+#install.packages("ggpubr")
+library(ggpubr)
 
 #read in metadata
 phys_meta <- read.csv(here("Data", "Physio_meta.csv"))
 
 #####Ash Free Dry Weight#####
-
 #load data
-
 DW <- read.csv(here("Data", "Physiology", "Dry_Weight_Oki2025.csv"))
 
 DW <- DW %>% left_join(phys_meta, by = "frag_ID")
@@ -74,7 +76,6 @@ DW.mod.spp <- lm(dw_mg_cm2~species, data = avg_DW)
 Anova(DW.mod.spp)
 summary(DW.mod.spp)
 
-#yes there is - Prus, Tfro, and Fcom all higher
 
 #and sensitivity
 DW.mod.stress <- lm(dw_mg_cm2~stress, data = avg_DW)
@@ -225,6 +226,30 @@ chla_time_line_sa
 ggsave("chla_time_line_colony_oculina_seasonal.pdf", chla_time_line, h = 10, w = 15)
 
 ggsave("chla_time_line_colony_sa_oculina_seasonal.pdf", chla_time_line_sa, h = 10, w = 15)
+
+#####Symbiont Density #####
+sym <- read.csv(here("Data", "Physiology", "oculina_nov24_sym_density.csv"))
+
+sym <- sym %>% left_join(phys_meta, by = "sample_ID")
+
+#calculate dry weight
+DW <- DW %>%
+  mutate(dw_g_mL = dry_pan - pan_weight,
+         dw_total_g = dw_g_mL*blastate_vol_mL,
+         dw_g_cm2 = dw_total_g/SA_cm2,
+         dw_mg_cm2 = dw_g_cm2*1000)
+
+#average across the reps
+avg_DW <- DW %>%
+  group_by(frag_ID) %>%
+  summarise(dw_g_mL = mean(dw_g_mL),
+            dw_total_g = mean(dw_total_g),
+            dw_g_cm2 = mean(dw_g_cm2),
+            dw_mg_cm2 = mean(dw_mg_cm2)) %>%
+  left_join(phys_meta, by = "frag_ID")
+
+write.csv(avg_DW, here("Data", "Physiology", "Average_Dry_Weight.csv"), row.names = FALSE)
+avg_DW <- read.csv(here("Data", "Average_Dry_Weight.csv"))
 
 
 ####STATS####
