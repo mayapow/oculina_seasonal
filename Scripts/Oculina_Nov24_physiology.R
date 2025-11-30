@@ -20,6 +20,8 @@ library(tidyr)
 library(performance)
 #install.packages("ggpubr")
 library(ggpubr)
+#install.packages("emmeans")
+library(emmeans)
 
 ###READ IN AND CLEAN DATA####
 
