@@ -208,13 +208,21 @@ ggsave(here("Output", "Nov_2024","sym_chla_shallow_scatter.jpg"), device = "jpg"
 #looks like we have 2 outliers that are driving these trends
 
 ###@ELLA THESE GRAPHS BELOW ARE LOOKING AT THE THREE GROUPS - Including apo/sym and deep group!
+###@ELLA - I ADDED LETTER LABELS HERE!!
 #chlorophyll a
 chla_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=ug_chla_cm, fill = depth_sa))+
   geom_boxplot()+
   geom_jitter(alpha=0.8, width=0.2)+
   theme_classic(base_size = 22)+
   labs(x = "Fragment symbiotic state", y = "Chlorophyll a (ug per cm2)")+
+  stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
+               label = c("a", "a", "b"))+ 
+  #EDIT LETTERS FOR EACH GRAPH - MAKE SURE THEY MATCH WITH STATS!!
+  #SAME LETTERS = SAME (not sig dif from eachother)
+  #DIF LETTERS = SIGNFICANTLY DIFFERENT FROM EACHOTHER
   theme(legend.position = "none")+
+  ylim(-0.2,7)+ #ELLA - EDIT Y LIMIT IF IT CUTS OFF LETTERS ON THE TOP
+  #MAKE SURE YOU DON'T GET THE WARNING THAT IT REMOVES ANY DATA (here, when I put Y=0, it got rid of a few)
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
 chla_nov_depth_sa_box
 ggsave(here("Output", "Nov_2024","chla_nov_depth_sa_box.jpg"), device = "jpg", h = 6, w = 10, chla_nov_depth_sa_box)
