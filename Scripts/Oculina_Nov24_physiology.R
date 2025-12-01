@@ -121,7 +121,7 @@ chla_nov_sa_frag_point <- ggplot(sym_chla_shallow, aes(x = sample_ID, y = ug_chl
     color = "Symbiotic state - within colony"
   )
 chla_nov_sa_frag_point
-ggsave(here("Output", "Nov_2024","chla_nov_sa_frag_point.pdf"), device = "pdf", h = 6, w = 10, chla_nov_sa_frag_point)
+ggsave(here("Output", "Nov_2024","chla_nov_sa_frag_point.jpg"), device = "jpg", h = 6, w = 10, chla_nov_sa_frag_point)
 
 #CHLA FRAG BOX
 chla_nov_sa_box <- ggplot(sym_chla_shallow, aes(x = sa_frag, y = ug_chla_cm, fill = sa_frag)) +
@@ -135,7 +135,7 @@ chla_nov_sa_box <- ggplot(sym_chla_shallow, aes(x = sa_frag, y = ug_chla_cm, fil
   theme(legend.position = "none") +
   scale_fill_manual(values = c("lightyellow", "brown"))
 chla_nov_sa_box
-ggsave(here("Output", "Nov_2024","chla_nov_sa_box.pdf"), device = "pdf", h = 6, w = 10, chla_nov_sa_box)
+ggsave(here("Output", "Nov_2024","chla_nov_sa_box.jpg"), device = "jpg", h = 6, w = 10, chla_nov_sa_box)
 
 ## CHL A PER SYMBIONT ##
 #POINT#
@@ -149,7 +149,7 @@ chla_sym_nov_sa_point <- ggplot(sym_chla_shallow, aes(x = sample_ID, y = chla_pg
     color = "Symbiotic state - within colony"
   )
 chla_sym_nov_sa_point
-ggsave(here("Output", "Nov_2024","chla_sym_nov_sa_point.pdf"), device = "pdf", h = 6, w = 10, chla_sym_nov_sa_point)
+ggsave(here("Output", "Nov_2024","chla_sym_nov_sa_point.jpg"), device = "jpg", h = 6, w = 10, chla_sym_nov_sa_point)
 
 # Chl a per symbiont by sa_frag BOX
 chla_sym_nov_sa_box <- ggplot(sym_chla_shallow, aes(x = sa_frag, y = chla_pg_sym, fill = sa_frag)) +
@@ -163,7 +163,7 @@ chla_sym_nov_sa_box <- ggplot(sym_chla_shallow, aes(x = sa_frag, y = chla_pg_sym
   theme(legend.position = "none") +
   scale_fill_manual(values = c("lightyellow", "brown"))
 chla_sym_nov_sa_box
-ggsave(here("Output", "Nov_2024","chla_sym_nov_sa_box.pdf"), device = "pdf", h = 6, w = 10, chla_sym_nov_sa_box)
+ggsave(here("Output", "Nov_2024","chla_sym_nov_sa_box.jpg"), device = "jpg", h = 6, w = 10, chla_sym_nov_sa_box)
 
 ##Sym density## POINT
 sym_nov_sa_point <- ggplot(sym_chla_shallow, aes(x = sample_ID, y = sym_cm2, color = sa_frag)) +
@@ -176,7 +176,7 @@ sym_nov_sa_point <- ggplot(sym_chla_shallow, aes(x = sample_ID, y = sym_cm2, col
     color = "Symbiotic state - within colony"
   )
 sym_nov_sa_point
-ggsave(here("Output", "Nov_2024","sym_nov_sa_point.pdf"), device = "pdf", h = 6, w = 10, sym_nov_sa_point)
+ggsave(here("Output", "Nov_2024","sym_nov_sa_point.jpg"), device = "jpg", h = 6, w = 10, sym_nov_sa_point)
 
 #SYM DENSITY BOX
 sym_nov_sa_box <- ggplot(sym_chla_shallow, aes(x = sa_frag, y = sym_cm2, fill = sa_frag)) +
@@ -190,7 +190,7 @@ sym_nov_sa_box <- ggplot(sym_chla_shallow, aes(x = sa_frag, y = sym_cm2, fill = 
   theme(legend.position = "none") +
   scale_fill_manual(values = c("lightyellow", "brown"))
 sym_nov_sa_box
-ggsave(here("Output", "Nov_2024","sym_nov_sa_box.pdf"), device = "pdf", h = 6, w = 10, sym_nov_sa_box)
+ggsave(here("Output", "Nov_2024","sym_nov_sa_box.jpg"), device = "jpg", h = 6, w = 10, sym_nov_sa_box)
 
 #scatterplot of apo vs sym shallow samples
 sym_chla_shallow_scatter <- ggplot(sym_chla_shallow, aes(x = sym_cm2, y = ug_chla_cm, fill = depth_sa)) +
@@ -203,6 +203,8 @@ sym_chla_shallow_scatter <- ggplot(sym_chla_shallow, aes(x = sym_cm2, y = ug_chl
        y = "Chlorophyll a (ug per cm2)", 
        fill = "Symbiotic state - within colony")
 sym_chla_shallow_scatter
+ggsave(here("Output", "Nov_2024","sym_chla_shallow_scatter.jpg"), device = "jpg", h = 6, w = 10, sym_nov_sa_box)
+
 #looks like we have 2 outliers that are driving these trends
 
 ###@ELLA THESE GRAPHS BELOW ARE LOOKING AT THE THREE GROUPS - Including apo/sym and deep group!
@@ -215,7 +217,7 @@ chla_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=ug_chla_cm, fill =
   theme(legend.position = "none")+
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
 chla_nov_depth_sa_box
-ggsave(here("Output", "Nov_2024","chla_nov_depth_sa_box.pdf"), device = "pdf", h = 6, w = 10, chla_nov_depth_sa_box)
+ggsave(here("Output", "Nov_2024","chla_nov_depth_sa_box.jpg"), device = "jpg", h = 6, w = 10, chla_nov_depth_sa_box)
 
 #chla per symbiont
 chla_sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=chla_pg_sym, fill = depth_sa))+
@@ -226,7 +228,7 @@ chla_sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=chla_pg_sym, f
   theme(legend.position = "none")+
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
 chla_sym_nov_depth_sa_box
-ggsave(here("Output", "Nov_2024","chla_sym_nov_depth_sa_box.pdf"), device = "pdf", h = 6, w = 10, chla_sym_nov_depth_sa_box)
+ggsave(here("Output", "Nov_2024","chla_sym_nov_depth_sa_box.jpg"), device = "jpg", h = 6, w = 10, chla_sym_nov_depth_sa_box)
 
 #symbiont density
 sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=sym_cm2, fill = depth_sa))+
@@ -237,7 +239,7 @@ sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=sym_cm2, fill = dep
   theme(legend.position = "none")+
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
 sym_nov_depth_sa_box
-ggsave(here("Output", "Nov_2024","sym_nov_depth_sa_box.pdf"), device = "pdf", h = 6, w = 10, sym_nov_depth_sa_box)
+ggsave(here("Output", "Nov_2024","sym_nov_depth_sa_box.jpg"), device = "jpg", h = 6, w = 10, sym_nov_depth_sa_box)
 
 #linear plot comparing symbiont density vs chlorophyll a across all 3 groups
 sym_chla_scatter <- ggplot(sym_chla, aes(x = sym_cm2, y = ug_chla_cm, fill = depth_sa)) +
@@ -250,6 +252,14 @@ sym_chla_scatter <- ggplot(sym_chla, aes(x = sym_cm2, y = ug_chla_cm, fill = dep
        y = "Chlorophyll a (ug per cm2)", 
        fill = "Fragment symbiotic state")
 sym_chla_scatter
+#ggsave(here("Output", "Nov_2024","sym_chla_scatter.jpg"), device = "jpg", h = 6, w = 10, sym_chla_scatter)
+ggsave(
+  filename = here("Output", "Nov_2024", "sym_chla_scatter.jpg"),
+  plot     = sym_chla_scatter,
+  device   = "jpg",
+  h        = 6,
+  w        = 10
+)
 #looks like we have 2 outliers that are driving these trends - this is fine to present for now
 
 ####STATS####
