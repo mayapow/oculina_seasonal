@@ -9,12 +9,15 @@ editor: visual
 ### Load libraries
 
 ```{r}
-#| echo: false
+# install packages as needed
 library(tidyverse)
+library(readr)
 library(here)
-library(dplyr)
 library(ggplot2)
 library(ggpubr)
+library(car)
+library(rstatix)
+library(emmeans)
 ```
 
 ### Read in data
@@ -86,16 +89,178 @@ A9-S - the only thing I can think about this is that there's an A9-5 Hawaiʻi sa
 ### Remove data as needed and clean up dataframe
 
 ```{r}
-id_remove <- c("A9-S", "SX7-A", "SX2-A")
+id_remove <- c("A9-S", "SX7-A", "SX2-A") #removes 4 samples bc SX2-A duplicate
 oculina_clean <- oculina_raw %>%
   filter(!sample_id %in% id_remove)
 
-#can do this to remove x in front of column names - not doing for now just in case but will likely do in the future
+#add data for general and species columns based on oculina_full
+oculina_clean <- oculina_clean %>%
+  mutate(location = "Radio Island") %>%
+  mutate(host_phylum = "Cnidaria") %>%
+  mutate(host_class = "Hexacorallia") %>%
+  mutate(host_order = "Scleractinia") %>%
+  mutate(host_family = "Oculinidae") %>%
+  mutate(host_genus = "Oculina") %>%
+  mutate(host_species = "arbuscula") %>%
+  mutate(bleaching = case_when(frag_sym == "A" ~ 'B',
+                               frag_sym == "S" ~ 'NB',))
+
+#can do this code below to remove x in front of column names - not doing for now just in case but will likely do in the future
 #colnames(oculina_clean)<-gsub("x","",colnames(oculina_clean))
+```
+
+### Merge with physiology data
+
+```{r}
+sym_chla <- read_csv(here("Data", "Nov_2024", "oculina_nov24_physio.csv"))
+sym_chla <- sym_chla %>% rename_at('sample_ID', ~'id')
+oculina_final <- oculina_clean %>% left_join(sym_chla, by = "id")
 ```
 
 ### Save dataframe
 
 ```{r}
-write.csv(oculina_clean, here("Data", "Metabolomics", "oculina_clean.csv"), row.names = FALSE)
+write.csv(oculina_final, here("Data", "Metabolomics", "oculina_final.csv"), row.names = FALSE)
+#and read back in saved version
+oculina_final <- read_csv(here("Data", "Metabolomics", "oculina_final.csv"))
+```
+
+## Physiology
+
+### Read in data
+
+```{r}
+sym_chla <- read_csv(here("Data", "Nov_2024", "oculina_nov24_physio.csv"))
+```
+
+info about variables - add notes that are helpful to you!
+
+sa_colony = aposymbiotic/symbiotic original designation of the colony
+
+sa_frag = aposymbiotic/symbiotic designation of the FRAGMENT
+
+ug_chla_cm = micrograms of chlorophyll a per cm2 of surface area
+
+sym_cm2 = symbiont density for cm2 of surface area
+
+chla_pg_sym = picograms of chlorophyll a per symbiont
+
+depth = deep (30ft), shallow (15ft)
+
+### Chlorophyll a
+
+Graph
+
+```{r}
+#chlorophyll a
+chla_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=ug_chla_cm, fill = depth_sa))+
+  geom_boxplot()+
+  geom_jitter(alpha=0.8, width=0.2)+
+  theme_classic(base_size = 22)+
+  labs(x = "Fragment symbiotic state", y = "Chlorophyll a (ug per cm2)")+
+  stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
+               label = c("a", "a", "b"))+ 
+  #EDIT LETTERS FOR EACH GRAPH - MAKE SURE THEY MATCH WITH STATS!!
+  #SAME LETTERS = SAME (not sig dif from eachother)
+  #DIF LETTERS = SIGNFICANTLY DIFFERENT FROM EACHOTHER
+  theme(legend.position = "none")+
+  ylim(-0.2,7)+ #ELLA - EDIT Y LIMIT IF IT CUTS OFF LETTERS ON THE TOP
+  #MAKE SURE YOU DON'T GET THE WARNING THAT IT REMOVES ANY DATA
+  scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
+chla_nov_depth_sa_box
+
+ggsave(here("Output", "Nov_2024","chla_nov_depth_sa_box.pdf"), device = "pdf", h = 6, w = 10, chla_nov_depth_sa_box)
+```
+
+Stats
+
+```{r}
+#anova
+chla_frag_aov <- aov(ug_chla_cm ~ depth_sa, data = sym_chla)
+summary(chla_frag_aov)
+Anova(chla_frag_aov)
+
+#pairwise
+chla_emm <- emmeans::emmeans(chla_frag_aov, ~depth_sa)
+pairs(chla_emm)
+```
+
+### Symbiont density
+
+Graph
+
+```{r}
+#symbiont density
+sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=sym_cm2, fill = depth_sa))+
+  geom_boxplot()+
+  geom_jitter(alpha=0.8, width=0.2)+
+  theme_classic(base_size = 22)+
+  labs(x = "Fragment symbiotic state", y = "Symbiont density (cells per cm2)")+
+  theme(legend.position = "none")+
+  scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
+sym_nov_depth_sa_box
+
+ggsave(here("Output", "Nov_2024","sym_nov_depth_sa_box.pdf"), device = "pdf", h = 6, w = 10, sym_nov_depth_sa_box)
+```
+
+Stats
+
+```{r}
+#anova
+sym_frag_aov <- aov(sym_cm2 ~ depth_sa, data = sym_chla)
+summary(sym_frag_aov)
+Anova(sym_frag_aov)
+
+#pairwise
+sym_emm <- emmeans::emmeans(sym_frag_aov, ~depth_sa)
+pairs(sym_emm)
+```
+
+### Chlorphyll a per symbiont
+
+Graph
+
+```{r}
+#chla per symbiont
+chla_sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=chla_pg_sym, fill = depth_sa))+
+  geom_boxplot()+
+  geom_jitter(alpha=0.8, width=0.2)+
+  theme_classic(base_size = 22)+
+  labs(x = "Fragment symbiotic state", y = "Chlorophyll a (pg per symbiont cell)")+
+  theme(legend.position = "none")+
+  scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
+chla_sym_nov_depth_sa_box
+ggsave(here("Output", "Nov_2024","chla_sym_nov_depth_sa_box.pdf"), device = "pdf", h = 6, w = 10, chla_sym_nov_depth_sa_box)
+```
+
+Stats
+
+```{r}
+#anova
+chla_sym_frag_aov <- aov(chla_pg_sym ~ depth_sa, data = sym_chla)
+summary(chla_sym_frag_aov)
+Anova(chla_sym_frag_aov)
+
+#pairwise
+chla_sym_emm <- emmeans::emmeans(chla_sym_frag_aov, ~depth_sa)
+pairs(chla_sym_emm)
+```
+
+### Correlation sym density vs chla
+
+```{r}
+#linear plot comparing symbiont density vs chlorophyll a across all 3 groups
+sym_chla_scatter <- ggplot(sym_chla, aes(x = sym_cm2, y = ug_chla_cm, fill = depth_sa)) +
+  geom_point(color='black', shape = 21) +
+  scale_fill_manual(values = c("white","lightyellow","brown"))+
+  theme_bw(base_size = 22) +
+  geom_smooth(aes(x = sym_cm2, y = ug_chla_cm, group = 1),
+              method = "lm", se = TRUE, color = "black", linewidth = 1.1) +
+  labs(x = "Symbiont density (cells per cm2)", 
+       y = "Chlorophyll a (ug per cm2)", 
+       fill = "Fragment symbiotic state")
+sym_chla_scatter
+ggsave(here("Output", "Nov_2024","sym_chla_scatter.pdf"), device = "pdf", h = 6, w = 10, sym_chla_scatter)
+
+##this indicates that we likely need to remove outliers from this data!! more to do!!
 ```

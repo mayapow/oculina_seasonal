@@ -232,6 +232,8 @@ chla_sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=chla_pg_sym, f
   geom_boxplot()+
   geom_jitter(alpha=0.8, width=0.2)+
   theme_classic(base_size = 22)+
+  stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
+               label = c("a", "b", "b"))+ 
   labs(x = "Fragment symbiotic state", y = "Chlorophyll a (pg per symbiont cell)")+
   theme(legend.position = "none")+
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
@@ -244,6 +246,8 @@ sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=sym_cm2, fill = dep
   geom_jitter(alpha=0.8, width=0.2)+
   theme_classic(base_size = 22)+
   labs(x = "Fragment symbiotic state", y = "Symbiont density (cells per cm2)")+
+  stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
+               label = c("a", "a", "b"))+ 
   theme(legend.position = "none")+
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
 sym_nov_depth_sa_box
@@ -293,6 +297,7 @@ ggsave(
 # 1) Chl a 
 chla_frag_aov <- aov(ug_chla_cm ~ sa_frag, data = sym_chla_shallow)
 summary(chla_frag_aov)
+Anova(chla_frag_aov)
 
 # Df Sum Sq Mean Sq F value   Pr(>F)    
 #             Df Sum Sq Mean Sq F value   Pr(>F)    
@@ -302,6 +307,7 @@ summary(chla_frag_aov)
 # 2) Symbiont density
 sym_frag_aov <- aov(sym_cm2 ~ sa_frag, data = sym_chla_shallow)
 summary(sym_frag_aov)
+Anova(sym_frag_aov)
 
 #             Df    Sum Sq   Mean Sq F value Pr(>F)  
 # sa_frag      1 1.294e+12 1.294e+12    3.85 0.0547 .
@@ -310,6 +316,7 @@ summary(sym_frag_aov)
 # 3) Chl a per symbiont
 chla_sym_frag_aov <- aov(chla_pg_sym ~ sa_frag, data = sym_chla_shallow)
 summary(chla_sym_frag_aov)
+Anova(chla_sym_frag_aov)
 
 #             Df Sum Sq Mean Sq F value  Pr(>F)   
 # sa_frag      1   54.2   54.20    9.67 0.00294 **
@@ -333,6 +340,7 @@ summary(chla_sym_frag_aov)
 # 1) Chl a 
 chla_frag_aov <- aov(ug_chla_cm ~ depth_sa, data = sym_chla)
 summary(chla_frag_aov)
+Anova(chla_frag_aov)
 
 #             Df Sum Sq Mean Sq F value   Pr(>F)    
 # depth_sa     2  27.45  13.727   23.73 1.36e-08 ***
@@ -350,6 +358,7 @@ pairs(chla_emm)
 # 2) Symbiont density
 sym_frag_aov <- aov(sym_cm2 ~ depth_sa, data = sym_chla)
 summary(sym_frag_aov)
+Anova(sym_frag_aov)
 
 #             Df    Sum Sq   Mean Sq F value   Pr(>F)    
 # depth_sa     2 5.983e+12 2.992e+12   11.12 6.39e-05 ***
