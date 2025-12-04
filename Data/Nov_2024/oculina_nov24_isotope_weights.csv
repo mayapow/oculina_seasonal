@@ -1,8 +1,8 @@
 ﻿sample_ID,full_ID,fraction_ID,full_fraction_ID,ag_capsule_mg,sample_mg,acid_capsule_mg,acid_sample_mg,acid_tray_location,final_tray_location,,acidified,
-A-18-A,A-18-A-1124,A-18-A-Host,A-18-A-1124-Host,16.67,5.65,23.39,6.72,e5,,,yes,
-A-18-A,A-18-A-1124,A-18-A-Algae,A-18-A-1124-Algae,16.9,2.76,,0,F7,,,yes,
-A-18-S,A-18-S-1124,A-18-S-Host,A-18-S-1124-Host,15.61,7.45,22.96,7.35,A4,A4,,yes,
-A-18-S,A-18-S-1124,A-18-S-Algae,A-18-S-1124-Algae,16.54,1.68,,0,G5,,,yes,
+A18-A,A18-A-1124,A18-A-Host,A18-A-1124-Host,16.67,5.65,23.39,6.72,e5,,,yes,
+A18-A,A18-A-1124,A18-A-Algae,A18-A-1124-Algae,16.9,2.76,,0,F7,,,yes,
+A18-S,A18-S-1124,A18-S-Host,A18-S-1124-Host,15.61,7.45,22.96,7.35,A4,A4,,yes,
+A18-S,A18-S-1124,A18-S-Algae,A18-S-1124-Algae,16.54,1.68,,0,G5,,,yes,
 A10-A,A10-A-1124,A10-A-Host,A10-A-1124-Host,16.62,4.09,20.24,3.62,A3,A3,,yes,
 A10-A,A10-A-1124,A10-A-Algae,A10-A-1124-Algae,16.82,0.47,,0,Tray 2 C1,,,,***nem?
 A10-S,A10-S-1124,A10-S-Host,A10-S-1124-Host,16.77,5.45,21.68,4.91,d9,D9,,yes,

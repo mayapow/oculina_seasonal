@@ -18,6 +18,7 @@ library(ggpubr)
 library(car)
 library(rstatix)
 library(emmeans)
+library(powerjoin)
 ```
 
 ### Read in data
@@ -32,6 +33,7 @@ This is the data that Ty initially shared with me in July 2025
 
 ```{r}
 oculina_full <- read_csv(here("Data", "Metabolomics","Oculina_full.csv"))
+head(oculina_full)
 ```
 
 I noticed these issues that did not match my metadata:
@@ -62,20 +64,20 @@ superset_raw <- read_csv(here("Data", "Metabolomics","Ty_superset_data_raw.csv")
 
 ```{r}
 #manually editing S16-S and -A to have the correct "symbiosis" column values
- superset_raw[superset_raw$sample_id=="S16-S", "symbiosis"] <- "symbiotic"
- superset_raw[superset_raw$sample_id=="S16-A", "symbiosis"] <- "aposymbiotic"
+ oculina_full[oculina_full$sample_id=="S16-S", "symbiosis"] <- "symbiotic"
+ oculina_full[oculina_full$sample_id=="S16-A", "symbiosis"] <- "aposymbiotic"
 ```
 
 ```{r}
 #manually editing 03072025_Curacoa_Plate5_S18A to be S18-S
-superset_raw[superset_raw$sample=="03072025_Curacoa_Plate5_S18A", "sample_id"] <- "S18-S"
-superset_raw[superset_raw$sample=="03072025_Curacoa_Plate5_S18A", "symbiosis"] <- "symbiotic"
+oculina_full[oculina_full$sample=="03072025_Curacoa_Plate5_S18A", "sample_id"] <- "S18-S"
+oculina_full[oculina_full$sample=="03072025_Curacoa_Plate5_S18A", "symbiosis"] <- "symbiotic"
 ```
 
 Merging dataframes based on sample_id to see what's missing
 
 ```{r}
-oculina_raw <- oc_meta %>% left_join(superset_raw, by = "sample_id") #84 samples
+oculina_raw <- oc_meta %>% power_left_join(oculina_full, by = "sample_id", conflict = coalesce_xy) #84 samples
 ```
 
 Samples that we don't have data for are:
@@ -93,15 +95,8 @@ id_remove <- c("A9-S", "SX7-A", "SX2-A") #removes 4 samples bc SX2-A duplicate
 oculina_clean <- oculina_raw %>%
   filter(!sample_id %in% id_remove)
 
-#add data for general and species columns based on oculina_full
-oculina_clean <- oculina_clean %>%
-  mutate(location = "Radio Island") %>%
-  mutate(host_phylum = "Cnidaria") %>%
-  mutate(host_class = "Hexacorallia") %>%
-  mutate(host_order = "Scleractinia") %>%
-  mutate(host_family = "Oculinidae") %>%
-  mutate(host_genus = "Oculina") %>%
-  mutate(host_species = "arbuscula") %>%
+#make sure B and NB really match designations of files
+oculina_clean <- oculina_clean %>% 
   mutate(bleaching = case_when(frag_sym == "A" ~ 'B',
                                frag_sym == "S" ~ 'NB',))
 
@@ -112,17 +107,33 @@ oculina_clean <- oculina_clean %>%
 ### Merge with physiology data
 
 ```{r}
-sym_chla <- read_csv(here("Data", "Nov_2024", "oculina_nov24_physio.csv"))
-sym_chla <- sym_chla %>% rename_at('sample_ID', ~'id')
-oculina_final <- oculina_clean %>% left_join(sym_chla, by = "id")
+physio <- read_csv(here("Data", "Nov_2024", "oculina_nov24_physio.csv"))
+oculina_final <- oculina_clean %>% power_left_join(physio, by = "sample_id", conflict = coalesce_xy)
 ```
 
-### Save dataframe
+### Save dataframes
 
 ```{r}
+#dataframe just metabolomics data no phys data
+write.csv(oculina_clean, here("Data", "Metabolomics", "oculina_clean.csv"), row.names = FALSE)
+
+#dataframe with physiolog
 write.csv(oculina_final, here("Data", "Metabolomics", "oculina_final.csv"), row.names = FALSE)
-#and read back in saved version
+```
+
+## Metabolomics initial analysis
+
+### Read in data
+
+```{r}
 oculina_final <- read_csv(here("Data", "Metabolomics", "oculina_final.csv"))
+```
+
+### Richness
+
+```{r}
+
+
 ```
 
 ## Physiology

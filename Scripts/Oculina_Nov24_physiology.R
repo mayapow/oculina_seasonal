@@ -24,9 +24,9 @@ library(ggpubr)
 library(emmeans)
 
 ###READ IN AND CLEAN DATA####
-
-##COMING BACK TO THIS SCRIPT @ELLA - JUST READ IN DATA AT LINE 87 - no need to do setup stuff again - I commented it all out
-
+# 
+# ##COMING BACK TO THIS SCRIPT @ELLA - JUST READ IN DATA AT LINE 87 - no need to do setup stuff again - I commented it all out
+# 
 # #read in data
 # #metadata
 # phys_meta <- read.csv(here("Data", "Nov_2024","oculina_nov24_metadata.csv"))
@@ -41,7 +41,7 @@ library(emmeans)
 #   left_join(sym, by = "sample_ID")
 # 
 # #remove samples that have no data, weird Chla ones tha have only Ro
-# sym_chla <- sym_chla %>% filter(sample_ID != "A12-S" & sample_ID != "A12-A") 
+# sym_chla <- sym_chla %>% filter(sample_ID != "A12-S" & sample_ID != "A12-A")
 # #here A12 from Nov 24 has no surface area yet so we can't use it - removed both A and S
 # 
 # #calculate symbiont density
@@ -72,7 +72,7 @@ library(emmeans)
 # sym_chla <- sym_chla %>%
 #   mutate(chla_pg_sym = (ug_chla_total/sym_total)*1000000)
 # 
-# #ADD column to look at deep vs shallow separately 
+# #ADD column to look at deep vs shallow separately
 # #and deep apo vs shallow apo vs shallow sym since we want to compare this with stats too
 # sym_chla <- sym_chla %>%
 #   mutate(depth = case_when(grepl("D", sample_ID) ~ "Deep",
@@ -80,7 +80,7 @@ library(emmeans)
 #   mutate(depth_sa = paste(depth,sa_frag))
 # 
 # #makes physiology folder
-# #dir.create(here("Data", "Physiology")) 
+# #dir.create(here("Data", "Physiology"))
 # #oh oops sorry, this doesn't need to be in new phys directory
 # #I'm moving it back into the Nov 2024 folder @ella
 # write.csv(sym_chla, here("Data", "Nov_2024", "oculina_nov24_physio.csv"), row.names = FALSE)
