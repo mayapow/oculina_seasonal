@@ -1,0 +1,84 @@
+﻿date,timepoint,depth_ft,group,tag_color,tag_no,id,id_time,frag_sym,photo,sample_id,who_sampled
+11/9/24,24-Nov,30,deep apo,none,1,D1-A,D1-A 11/24,A,y,D1-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,2,D2-A,D2-A 11/24,A,y,D2-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,3,D3-A,D3-A 11/24,A,y,D3-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,4,D4-A,D4-A 11/24,A,y,D4-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,5,D5-A,D5-A 11/24,A,y,D5-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,6,D6-A,D6-A 11/24,A,y,D6-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,7,D7-A,D7-A 11/24,A,y,D7-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,8,D8-A,D8-A 11/24,A,y,D8-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,9,D9-A,D9-A 11/24,A,y,D9-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,10,D10-A,D10-A 11/24,A,y,D10-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,11,D11-A,D11-A 11/24,A,y,D11-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,12,D12-A,D12-A 11/24,A,y,D12-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,13,D13-A,D13-A 11/24,A,y,D13-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,14,D14-A,D14-A 11/24,A,y,D14-A,MP CD
+11/9/24,24-Nov,30,deep apo,none,15,D15-A,D15-A 11/24,A,y,D15-A,MP CD
+11/9/24,24-Nov,15,old apo,yellow,5,A5-S,A5-S 11/24,S,y,A5-S,MP CD
+11/9/24,24-Nov,15,old apo,yellow,5,A5-A,A5-A 11/24,A,y,A5-A,MP CD
+11/9/24,24-Nov,15,old apo,yellow,8,A8-S,A8-S 11/24,S,y,A8-S,MP CD
+11/9/24,24-Nov,15,old apo,yellow,8,A8-A,A8-A 11/24,A,y,A8-A,MP CD
+11/9/24,24-Nov,15,old apo,yellow,11,A11-S,A11-S 11/24,S,y,AX5-S,MP CD
+11/9/24,24-Nov,15,old apo,yellow,11,A11-A,A11-A 11/24,A,y,AX5-A,MP CD
+11/9/24,24-Nov,15,old apo,yellow,13,A13-S,A13-S 11/24,S,y,A13-S,EJ SL
+11/9/24,24-Nov,15,old apo,yellow,13,A13-A,A13-A 11/24,A,y,A13-A,EJ SL
+11/9/24,24-Nov,15,old apo,yellow,14,A14-S,A14-S 11/24,S,y,SX7-S,MP CD
+11/9/24,24-Nov,15,old apo,yellow,14,A14-A,A14-A 11/24,A,y,SX7-A,MP CD
+11/9/24,24-Nov,15,old apo,yellow,15,A15-S,A15-S 11/24,S,y,A15-S,MP CD
+11/9/24,24-Nov,15,old apo,yellow,15,A15-A,A15-A 11/24,A,y,A15-A,MP CD
+11/9/24,24-Nov,15,old apo,yellow,15 duplicate,A15-S duplicate,A15-S 11/24 duplicate,S,y,AX4-S,EJ SL
+11/9/24,24-Nov,15,old apo,yellow,15 duplicate,A15-A duplicate,A15-A 11/24 duplicate,A,y,AX4-A,EJ SL
+11/9/24,24-Nov,15,old apo,yellow,24,A24-S,A24-S 11/24,S,y,A24-S,MP CD
+11/9/24,24-Nov,15,old apo,yellow,24,A24-A,A24-A 11/24,A,y,A24-A,MP CD
+11/9/24,24-Nov,15,old apo,yellow,25,A25-S,A25-S 11/24,S,y,A25-S,MP CD
+11/9/24,24-Nov,15,old apo,yellow,25,A25-A,A25-A 11/24,A,y,A25-A,MP CD
+11/9/24,24-Nov,15,new apo,blue,9,A9-S,A9-S 11/24,S,y,A9-S,EJ SL
+11/9/24,24-Nov,15,new apo,blue,9,A9-A,A9-A 11/24,A,y,A9-A,EJ SL
+11/9/24,24-Nov,15,new apo,blue,10,A10-S,A10-S 11/24,S,y,A10-S,EJ SL
+11/9/24,24-Nov,15,new apo,blue,10,A10-A,A10-A 11/24,A,y,A10-A,EJ SL
+11/9/24,24-Nov,15,new apo,blue,11,A11-S,A11-S 11/24,S,y,A11-S,EJ SL
+11/9/24,24-Nov,15,new apo,blue,11,A11-A,A11-A 11/24,A,y,A11-A,EJ SL
+11/9/24,24-Nov,15,new apo,blue,12,A12-S,A12-S 11/24,S,y,AX2-S,EJ SL
+11/9/24,24-Nov,15,new apo,blue,12,A12-A,A12-A 11/24,A,y,AX2-A,EJ SL
+11/9/24,24-Nov,15,new apo,blue,13,A13-S,A13-S 11/24,S,y,AX1-S,EJ SL
+11/9/24,24-Nov,15,new apo,blue,13,A13-A,A13-A 11/24,A,y,AX1-A,EJ SL
+11/9/24,24-Nov,15,new apo,blue,14,A14-S,A14-S 11/24,S,y,AX7-S,MP CL
+11/9/24,24-Nov,15,new apo,blue,14,A14-A,A14-A 11/24,A,y,AX7-A,MP CL
+11/9/24,24-Nov,15,new apo,blue,18,A18-S,A18-S 11/24,S,y,AX3-S,EJ SL
+11/9/24,24-Nov,15,new apo,blue,18,A18-A,A18-A 11/24,A,y,AX3-A,EJ SL
+11/9/24,24-Nov,15,old sym,green,1,S1-S,S1-S 11/24,S,y,S1-S,MP CL
+11/9/24,24-Nov,15,old sym,green,1,S1-A,S1-A 11/24,A,y,S1-A,MP CL
+11/9/24,24-Nov,15,old sym,green,1 duplicate,S1-S duplicate,S1-S 11/24 duplicate,S,y,SX1-S,EJ SL
+11/9/24,24-Nov,15,old sym,green,1 duplicate,S1-A duplicate,S1-A 11/24 duplicate,A,y,SX1-A,EJ SL
+11/9/24,24-Nov,15,old sym,green,6,S6-S,S6-S 11/24,S,y,SX6-S,MP CL
+11/9/24,24-Nov,15,old sym,green,6,S6-A,S6-A 11/24,A,y,SX6-A,MP CL
+11/9/24,24-Nov,15,old sym,green,7,S7-S,S7-S 11/24,S,y,S7-S,MP CL
+11/9/24,24-Nov,15,old sym,green,7,S7-A,S7-A 11/24,A,y,S7-A,MP CL
+11/9/24,24-Nov,15,old sym,green,9,S9-S,S9-S 11/24,S,y,S9-S,MP CL
+11/9/24,24-Nov,15,old sym,green,9,S9-A,S9-A 11/24,A,y,S9-A,MP CL
+11/9/24,24-Nov,15,old sym,green,10,S10-S,S10-S 11/24,S,y,S10-S,MP CL
+11/9/24,24-Nov,15,old sym,green,10,S10-A,S10-A 11/24,A,y,S10-A,MP CL
+11/9/24,24-Nov,15,old sym,green,11,S11-S,S11-S 11/24,S,y,SX8-S,MP CL
+11/9/24,24-Nov,15,old sym,green,11,S11-A,S11-A 11/24,A,y,SX8-A,MP CL
+11/9/24,24-Nov,15,old sym,green,15,S15-S,S15-S 11/24,S,y,S15-S,MP CL
+11/9/24,24-Nov,15,old sym,green,15,S15-A,S15-A 11/24,A,y,S15-A,MP CL
+11/9/24,24-Nov,15,old sym,green,15 duplicate,S15-S duplicate,S15-S 11/24 duplicate,S,y,SX2-S,EJ SL
+11/9/24,24-Nov,15,old sym,green,15 duplicate,S15-A duplicate,S15-A 11/24 duplicate,A,y,SX2-A,EJ SL
+11/9/24,24-Nov,15,old sym,green,26,S26-S,S26-S 11/24,S,y,SX5-S,MP CL
+11/9/24,24-Nov,15,old sym,green,26,S26-A,S26-A 11/24,A,y,SX5-A,MP CL
+11/9/24,24-Nov,15,new sym,green ,11,S11-S,S11-S 11/24,S,y,S11-S,EJ SL
+11/9/24,24-Nov,15,new sym,green ,11,S11-A,S11-A 11/24,A,y,S11-A,EJ SL
+11/9/24,24-Nov,15,new sym,green ,12,S12-S,S12-S 11/24,S,y,A12-S,EJ SL
+11/9/24,24-Nov,15,new sym,green ,12,S12-A,S12-A 11/24,A,y,A12-A,EJ SL
+11/9/24,24-Nov,15,new sym,green ,16,S16-S,S16-S 11/24,S,y,S16-S,EJ SL
+11/9/24,24-Nov,15,new sym,green ,16,S16-A,S16-A 11/24,A,y,S16-A,EJ SL
+11/9/24,24-Nov,15,new sym,green ,17,S17-S,S17-S 11/24,S,y,S17-S,EJ SL
+11/9/24,24-Nov,15,new sym,green ,17,S17-A,S17-A 11/24,A,y,S17-A,EJ SL
+11/9/24,24-Nov,15,new sym,green ,18,S18-S,S18-S 11/24,S,y,S18-S,EJ SL
+11/9/24,24-Nov,15,new sym,green ,18,S18-A,S18-A 11/24,A,y,S18-A,EJ SL
+11/9/24,24-Nov,15,new sym,green ,19,S19-S,S19-S 11/24,S,y,S19-S,EJ SL
+11/9/24,24-Nov,15,new sym,green ,19,S19-A,S19-A 11/24,A,y,S19-A,EJ SL
+11/9/24,24-Nov,15,new sym,green ,21,S21-S,S21-S 11/24,S,y,S21-S,EJ SL
+11/9/24,24-Nov,15,new sym,green ,21,S21-A,S21-A 11/24,A,y,S21-A,EJ SL
+11/9/24,24-Nov,15,new sym,green ,22,S22-S,S22-S 11/24,S,y,S22-S,EJ SL
+11/9/24,24-Nov,15,new sym,green ,22,S22-A,S22-A 11/24,A,y,S22-A,EJ SL

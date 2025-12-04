@@ -1,0 +1,101 @@
+---
+title: "Oculina_Metabolomics"
+format: html
+editor: visual
+---
+
+## Setup
+
+### Load libraries
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(here)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+```
+
+### Read in data
+
+Here is my metadata
+
+```{r}
+oc_meta <- read_csv(here("Data", "Metabolomics","oculina_metabolomics_metadata.csv"))
+```
+
+This is the data that Ty initially shared with me in July 2025
+
+```{r}
+oculina_full <- read_csv(here("Data", "Metabolomics","Oculina_full.csv"))
+```
+
+I noticed these issues that did not match my metadata:
+
+The dataset is missing A9-S, did the sample fail or not transfer over?
+
+The dataset is missing SX7-A, did the sample fail or not transfer over?
+
+AX2 and A12 samples are duplicates? I have AX2 bag labeled as A12 in my dataset so I believe this should only be one sample.
+
+There is a duplicate of SX2-A in the dataset and there should only be one. They are labeled as: CuracaoSet2_plate4_SX2-A_20250221104845 and CuracaoSet2_plate4_SX2-A, might just have copied over twice. Although, looking at the actual data, there are different numbers for the different metabolites so I'm not sure.
+
+S16-A and S16S labels are switched (apo vs sym designations and associated metadata are swapped) - which part of the data is actually switched, just the names or the other data? \*\***symbiosis column is swapped, data is correct - MANUALLY EDITING THIS\*\***
+
+There are two S18-A, with the sample names of 03072025_Curacoa_Plate5_S18A and CuracaoSet2_plate4_S18-A. I believe one is supposed to be S18S, do you know which one is which? \***I believe that 03072025_Curacoa_Plate5_S18A is the symbiotic one by sorting several datasets that split evenly apo/sym - Manually editing this\***
+
+Replicate samples that will be helpful checks - just noting this here, no issues with these samples:
+
+SX1 and S1, SX2 and S15, and then AX4 and A15 are duplicate samples from the same coral and I have them both listed in my dataset - will be good to check using these replicates
+
+SO NOW: Looking through data that was shared with me Sept 3rd (to this email: maya.elizabeth.powell\@gmail.com) - BIG raw data
+
+```{r}
+superset_raw <- read_csv(here("Data", "Metabolomics","Ty_superset_data_raw.csv"))
+```
+
+### Manual edits
+
+```{r}
+#manually editing S16-S and -A to have the correct "symbiosis" column values
+ superset_raw[superset_raw$sample_id=="S16-S", "symbiosis"] <- "symbiotic"
+ superset_raw[superset_raw$sample_id=="S16-A", "symbiosis"] <- "aposymbiotic"
+```
+
+```{r}
+#manually editing 03072025_Curacoa_Plate5_S18A to be S18-S
+superset_raw[superset_raw$sample=="03072025_Curacoa_Plate5_S18A", "sample_id"] <- "S18-S"
+superset_raw[superset_raw$sample=="03072025_Curacoa_Plate5_S18A", "symbiosis"] <- "symbiotic"
+```
+
+Merging dataframes based on sample_id to see what's missing
+
+```{r}
+oculina_raw <- oc_meta %>% left_join(superset_raw, by = "sample_id") #84 samples
+```
+
+Samples that we don't have data for are:
+
+SX7-A - **I believe this is accidentally labeled as SX2-A - but we sadly can't tell**
+
+Both SX2 and SX7 samples were run on plate 4 and don't have any different metadata, so I cannot tell them apart - I think this means that both SX2-A samples as well as SX7-A need to be removed from the dataset if we want to do colony tracking. But if we just want to separate them as two unidentified apo samples and not ID/compare them by colony, we can just rename since they are both apo
+
+A9-S - the only thing I can think about this is that there's an A9-5 Hawaiʻi sample that could be it, but it looks like it's from a totally different plate (QE_0924_Lipid_plate19_KARP_T1_A9-5), so removing for now.
+
+### Remove data as needed and clean up dataframe
+
+```{r}
+id_remove <- c("A9-S", "SX7-A", "SX2-A")
+oculina_clean <- oculina_raw %>%
+  filter(!sample_id %in% id_remove)
+
+#can do this to remove x in front of column names - not doing for now just in case but will likely do in the future
+#colnames(oculina_clean)<-gsub("x","",colnames(oculina_clean))
+```
+
+### Save dataframe
+
+```{r}
+write.csv(oculina_clean, here("Data", "Metabolomics", "oculina_clean.csv"), row.names = FALSE)
+```
