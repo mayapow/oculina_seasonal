@@ -1,8 +1,5 @@
 #Oculina seasonal project symbiont density & chlorophyll a
 #Authors: Maya Powell, Ella Hennessey
-#Last updated: November 2025
-
-#Maya Powell & Jamie Long & Ella Hennessey
 #Last edited November 28th 2025
 
 #load libraries

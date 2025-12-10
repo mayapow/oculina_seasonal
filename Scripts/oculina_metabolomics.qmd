@@ -129,7 +129,7 @@ write.csv(oculina_final, here("Data", "Metabolomics", "oculina_final.csv"), row.
 oculina_final <- read_csv(here("Data", "Metabolomics", "oculina_final.csv"))
 ```
 
-### Richness
+### Alpha
 
 ```{r}
 
