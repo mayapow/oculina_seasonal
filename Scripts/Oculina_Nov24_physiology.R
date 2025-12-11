@@ -230,7 +230,7 @@ chla_sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=chla_pg_sym, f
   geom_jitter(alpha=0.8, width=0.2)+
   theme_classic(base_size = 22)+
   stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
-               label = c("a", "b", "b"))+ 
+               label = c("a", "a", "b"))+ 
   labs(x = "Fragment symbiotic state", y = "Chlorophyll a (pg per symbiont cell)")+
   theme(legend.position = "none")+
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
@@ -244,7 +244,7 @@ sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=sym_cm2, fill = dep
   theme_classic(base_size = 22)+
   labs(x = "Fragment symbiotic state", y = "Symbiont density (cells per cm2)")+
   stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
-               label = c("a", "a", "b"))+ 
+               label = c("a", "b", "b"))+ 
   theme(legend.position = "none")+
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
 sym_nov_depth_sa_box

@@ -19,7 +19,6 @@ library(car)
 library(rstatix)
 library(emmeans)
 library(powerjoin)
-library(dplyr)
 ```
 
 ### Read in data
@@ -27,14 +26,13 @@ library(dplyr)
 Here is my metadata
 
 ```{r}
-oc_meta <- read_csv(here("Data", "Metabolomics","oculina_metabolomics_metadata.csv"))
+oc_meta <- read.csv(here("Data", "Metabolomics","oculina_metabolomics_metadata.csv"))
 ```
 
 This is the data that Ty initially shared with me in July 2025
 
 ```{r}
-oculina_full <- read_csv(here("Data", "Metabolomics","Oculina_full.csv"))
-head(oculina_full)
+oculina_full <- read.csv(here("Data", "Metabolomics","Oculina_full.csv"))
 ```
 
 I noticed these issues that did not match my metadata:
@@ -57,8 +55,10 @@ SX1 and S1, SX2 and S15, and then AX4 and A15 are duplicate samples from the sam
 
 SO NOW: Looking through data that was shared with me Sept 3rd (to this email: maya.elizabeth.powell\@gmail.com) - BIG raw data
 
+This data has annotations as well for compounds
+
 ```{r}
-superset_raw <- read_csv(here("Data", "Metabolomics","Ty_superset_data_raw.csv"))
+superset_raw <- read.csv(here("Data", "Metabolomics","Ty_superset_data_raw.csv"))
 ```
 
 ### Manual edits
@@ -67,41 +67,61 @@ superset_raw <- read_csv(here("Data", "Metabolomics","Ty_superset_data_raw.csv")
 #manually editing S16-S and -A to have the correct "symbiosis" column values
  oculina_full[oculina_full$sample_id=="S16-S", "symbiosis"] <- "symbiotic"
  oculina_full[oculina_full$sample_id=="S16-A", "symbiosis"] <- "aposymbiotic"
+ superset_raw[superset_raw$sample_id=="S16-S", "symbiosis"] <- "symbiotic"
+ superset_raw[superset_raw$sample_id=="S16-A", "symbiosis"] <- "aposymbiotic"
 ```
 
 ```{r}
 #manually editing 03072025_Curacoa_Plate5_S18A to be S18-S
 oculina_full[oculina_full$sample=="03072025_Curacoa_Plate5_S18A", "sample_id"] <- "S18-S"
 oculina_full[oculina_full$sample=="03072025_Curacoa_Plate5_S18A", "symbiosis"] <- "symbiotic"
+superset_raw[superset_raw$sample=="03072025_Curacoa_Plate5_S18A", "sample_id"] <- "S18-S"
+superset_raw[superset_raw$sample=="03072025_Curacoa_Plate5_S18A", "symbiosis"] <- "symbiotic"
 ```
 
 Merging dataframes based on sample_id to see what's missing
 
 ```{r}
-oculina_raw <- oc_meta %>% power_left_join(oculina_full, by = "sample_id", conflict = coalesce_xy) #84 samples
+oculina_superset_raw <- oc_meta %>% power_left_join(superset_raw, by = "sample_id", conflict = coalesce_xy) #84 samples
+oculina_full_raw <- oc_meta %>% power_left_join(oculina_full, by = "sample_id", conflict = coalesce_xy) #84 samples
 ```
 
 Samples that we don't have data for are:
 
 SX7-A - **I believe this is accidentally labeled as SX2-A - but we sadly can't tell**
 
-Both SX2 and SX7 samples were run on plate 4 and don't have any different metadata, so I cannot tell them apart - I think this means that both SX2-A samples as well as SX7-A need to be removed from the dataset if we want to do colony tracking. But if we just want to separate them as two unidentified apo samples and not ID/compare them by colony, we can just rename since they are both apo
+Both SX2 and SX7 samples were run on plate 4 and don't have any different metadata, so I cannot tell them apart - this means that both SX2-A samples as well as SX7-A need to be removed from the dataset if we want to do colony tracking. But if we just want to separate them as two unidentified apo samples and not ID/compare them by colony, we can just rename since they are both apo
 
 A9-S - the only thing I can think about this is that there's an A9-5 Hawaiʻi sample that could be it, but it looks like it's from a totally different plate (QE_0924_Lipid_plate19_KARP_T1_A9-5), so removing for now.
 
 ### Remove data as needed and clean up dataframe
 
 ```{r}
-id_remove <- c("A9-S", "SX7-A", "SX2-A") #removes 4 samples bc SX2-A duplicate
-oculina_clean <- oculina_raw %>%
-  filter(!sample_id %in% id_remove)
 
-#make sure B and NB really match designations of files
-oculina_clean <- oculina_clean %>% 
+#add data for general and species columns
+oculina_superset_clean <- oculina_superset_raw %>%
+  mutate(location = "Radio Island") %>%
+  mutate(host_phylum = "Cnidaria") %>%
+  mutate(host_class = "Hexacorallia") %>%
+  mutate(host_order = "Scleractinia") %>%
+  mutate(host_family = "Oculinidae") %>%
+  mutate(host_genus = "Oculina") %>%
+  mutate(host_species = "arbuscula") %>%
   mutate(bleaching = case_when(frag_sym == "A" ~ 'B',
                                frag_sym == "S" ~ 'NB',))
 
-#can do this code below to remove x in front of column names - not doing for now just in case but will likely do in the future
+oculina_clean <- oculina_full_raw %>%
+  mutate(location = "Radio Island") %>%
+  mutate(host_phylum = "Cnidaria") %>%
+  mutate(host_class = "Hexacorallia") %>%
+  mutate(host_order = "Scleractinia") %>%
+  mutate(host_family = "Oculinidae") %>%
+  mutate(host_genus = "Oculina") %>%
+  mutate(host_species = "arbuscula") %>%
+  mutate(bleaching = case_when(frag_sym == "A" ~ 'B',
+                               frag_sym == "S" ~ 'NB',))
+
+#can do this code below to remove x in front of column names
 #colnames(oculina_clean)<-gsub("x","",colnames(oculina_clean))
 ```
 
@@ -109,32 +129,59 @@ oculina_clean <- oculina_clean %>%
 
 ```{r}
 physio <- read_csv(here("Data", "Nov_2024", "oculina_nov24_physio.csv"))
-oculina_final <- oculina_clean %>% power_left_join(physio, by = "sample_id", conflict = coalesce_xy)
+
+#duplicates of metabolomics to duplicate physiology for:
+#SX1 = S1 duplicate, SX2 = S15 duplicate, and then AX4 = A15 duplicate
+
+#generate IDs for new data for duplicates
+id_map <- tribble(
+  ~old_id, ~new_id,
+  "S1-A",  "SX1-A",
+  "S1-S",  "SX1-S",
+  "S15-A", "SX2-A",
+  "S15-S", "SX2-S",
+  "A15-A", "AX4-A",
+  "A15-S", "AX4-S"
+)
+
+#create duplicate dataframe to add the phys data to these IDs
+physio_duplicates <- physio %>%
+  inner_join(id_map, by = c("sample_id" = "old_id")) %>%
+  mutate(sample_id = new_id) %>% #rename to sample id to merge
+  select(-new_id) #remove new id variable
+
+#add rows into physio dataframe to join with metabolomics
+physio_metab <- bind_rows(physio, physio_duplicates)
+
+#create dataframes with physio as well
+oculina_superset_final <- oculina_superset_clean %>% power_right_join(physio_metab, by = "sample_id", conflict = coalesce_xy) #79 samples
+
+oculina_final <- oculina_clean %>% power_right_join(physio_metab, by = "sample_id", conflict = coalesce_xy) #79 samples
+```
+
+### Remove data based on notes above
+
+```{r}
+id_remove <- c("A9-S", "SX7-A", "SX2-A") #removes 4 samples bc SX2-A duplicate
+
+oculina_superset_final <- oculina_superset_final %>% filter(!sample_id %in% id_remove)
+oculina_final <- oculina_final %>% filter(!sample_id %in% id_remove)
+
+#76 samples in each which is 80-4 so that makes sense! love it
 ```
 
 ### Save dataframes
 
-```{r}
-#dataframe just metabolomics data no phys data
-write.csv(oculina_clean, here("Data", "Metabolomics", "oculina_clean.csv"), row.names = FALSE)
+@Priya here are the final dataframes for you to use! These have: physiology data, metadata, and metabolomics data. All metadata and physiology data is on the left side so it's easy to see, and physiology data has been duplicated for the duplicate metabolomics samples.
 
-#dataframe with physiolog
+There are two different datasets here - the oculina_superset_final dataframe has 31360 variables (and comes from Ty_superset_raw) while the oculina_final dataframe has 16426 variables (and comes from Oculina_full).
+
+```{r}
+#dataframe that has ALL original data - from "Ty superset raw" data
+write.csv(oculina_superset_final, here("Data", "Metabolomics", "oculina_superset_final.csv"), row.names = FALSE)
+
+#dataframe that was slightly cleaned up - from "Oculina full"
 write.csv(oculina_final, here("Data", "Metabolomics", "oculina_final.csv"), row.names = FALSE)
-```
-
-## Metabolomics initial analysis
-
-### Read in data
-
-```{r}
-oculina_final <- read_csv(here("Data", "Metabolomics", "oculina_final.csv"))
-```
-
-### Alpha
-
-```{r}
-
-
 ```
 
 ## Physiology
@@ -208,6 +255,8 @@ sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=sym_cm2, fill = dep
   geom_jitter(alpha=0.8, width=0.2)+
   theme_classic(base_size = 22)+
   labs(x = "Fragment symbiotic state", y = "Symbiont density (cells per cm2)")+
+  stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
+               label = c("a", "b", "b"))+ 
   theme(legend.position = "none")+
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
 sym_nov_depth_sa_box
@@ -233,15 +282,17 @@ pairs(sym_emm)
 Graph
 
 ```{r}
-#chla per symbiont
 chla_sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=chla_pg_sym, fill = depth_sa))+
   geom_boxplot()+
   geom_jitter(alpha=0.8, width=0.2)+
   theme_classic(base_size = 22)+
+  stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
+               label = c("a", "a", "b"))+ 
   labs(x = "Fragment symbiotic state", y = "Chlorophyll a (pg per symbiont cell)")+
   theme(legend.position = "none")+
-  scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
+  scale_fill_manual(values = c("white","lightyellow","brown"))
 chla_sym_nov_depth_sa_box
+
 ggsave(here("Output", "Nov_2024","chla_sym_nov_depth_sa_box.pdf"), device = "pdf", h = 6, w = 10, chla_sym_nov_depth_sa_box)
 ```
 
