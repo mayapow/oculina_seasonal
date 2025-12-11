@@ -1,5 +1,6 @@
 ---
-title: "Oculina_Metabolomics"
+title: "Oculina Metabolomics Initial Data Processing and Physiology"
+author: Maya Powell
 format: html
 editor: visual
 ---
