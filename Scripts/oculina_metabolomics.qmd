@@ -19,6 +19,7 @@ library(car)
 library(rstatix)
 library(emmeans)
 library(powerjoin)
+library(dplyr)
 ```
 
 ### Read in data
