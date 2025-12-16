@@ -1,0 +1,20 @@
+---
+title: "PriyasMetabolomics"
+format: html
+---
+
+```{r}
+library(dplyr)
+library(randomForest)
+library(rfPermute)
+```
+
+```{r}
+oculina <- read.csv("Data/Metabolomics/oculina_superset_final.csv")
+ocu_meta <- read.csv("Data/Metabolomics/oculina_metabolomics_metadata.csv")
+ocu_final <- read.csv("Data/Metabolomics/oculina_final.csv")
+```
+
+```{r}
+print(oculina$chla_pg_sym)
+```
