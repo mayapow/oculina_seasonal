@@ -7,14 +7,54 @@ format: html
 library(dplyr)
 library(randomForest)
 library(rfPermute)
+library(vegan)
+library(ggplot2)
 ```
 
 ```{r}
 oculina <- read.csv("Data/Metabolomics/oculina_superset_final.csv")
 ocu_meta <- read.csv("Data/Metabolomics/oculina_metabolomics_metadata.csv")
-ocu_final <- read.csv("Data/Metabolomics/oculina_final.csv")
 ```
 
 ```{r}
 print(oculina$chla_pg_sym)
+```
+
+PCoA:
+
+```{r}
+num_df <- oculina[, -c(1:27, 31358:31386)]
+metapheno <- oculina$bleaching
+meta_id <- oculina$id
+
+
+braycurtis <- vegdist(num_df, method = "bray")
+pcoa_result <- cmdscale(braycurtis, eig = TRUE)
+eig_vals <- pcoa_result$eig
+variance_explained <- eig_vals/sum(eig_vals) * 100
+
+pcoa_df_ocu <- data.frame(
+  PC1 = pcoa_result$points[, 1],
+  PC2 = pcoa_result$points[, 2],
+  Phenotype = metapheno,
+  ID = meta_id
+)
+
+
+pcoa_oculina <-ggplot(data = pcoa_df_ocu, aes(x = PC1, y = PC2, color = Phenotype)) + 
+  geom_point() +
+ 
+  scale_color_manual(values = c("B" = "orange", "NB" = "blue")) +
+  
+  theme_classic(base_size = 8) +
+  theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
+        ) +
+
+  labs(
+       x = paste("PC1 ", sprintf("%.1f%%", variance_explained[1])),
+       y = paste("PC2 ", sprintf("%.1f%%", variance_explained[2])),
+       ) +
+  theme(plot.margin=ggplot2::margin(t=8,b=8,r=15,l=20,unit="pt"))
+   
+pcoa_oculina
 ```
