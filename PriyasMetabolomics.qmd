@@ -58,3 +58,33 @@ pcoa_oculina <-ggplot(data = pcoa_df_ocu, aes(x = PC1, y = PC2, color = Phenotyp
    
 pcoa_oculina
 ```
+
+random forest model to predict bleaching phenotype using all metabolites:
+
+```{r}
+
+num_df_phen <- num_df |>
+  mutate(Phenotype = oculina$bleaching)
+
+rf_phen <- randomForest(Phenotype ~., data = num_df_phen, ntree = 50)
+
+rf_phen
+```
+
+random forest model to predict \[physio #1\] using all metabolites:
+
+```{r}
+
+```
+
+random forest model to predict \[physio #2\] using all metabolites:
+
+```{r}
+
+```
+
+random forest model to predict \[physio #3\] using all metabolites:
+
+```{r}
+
+```
