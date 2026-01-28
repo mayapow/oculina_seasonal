@@ -191,3 +191,62 @@ ggplot(sig_feat_phen_plot, aes(x = Feature, y = MeanDecreaseAccuracy)) +
   theme_minimal()
 
 ```
+
+rfpermute regression by chlorophyll:
+
+```{r}
+rfp_chlor <- rfPermute(chla ~., data = num_df_final_chla, na.action = na.omit, ntree = 500, num.rep = 100)
+
+rfp_chlor
+
+rfp_table_chlor <- as.data.frame(importance(rfp_chlor))  # Convert to a data frame
+rfp_table_chlor <- tibble::rownames_to_column(rfp_table_chlor, var = "Feature")
+print(rfp_table_chlor)  # Display in console
+
+#significant_features_chlor <- rfp_table_chlor %>% filter(B.pval < 0.05 & NB.pval < 0.05)  # Adjust p-value threshold as needed
+
+#print(significant_features_chlor)
+```
+
+```{r}
+write.csv(rfp_table_chlor, file = "rfp_chlor.csv")
+```
+
+```{r}
+
+rfp_chlor <- read.csv("rfp_chlor.csv")
+significant_features_chlor <- rfp_chlor %>% filter(`X.IncMSE.pval` < 0.05)
+print(significant_features_chlor)
+```
+
+log2FC for significant features in chlorophyll; to determine B and NB over representation for these features
+
+```{r}
+sig_rows_chlor <- significant_features_chlor$Feature
+
+num_df_sig_chlor <- data.matrix(num_df_final |>
+  select(all_of(sig_rows_chlor)))
+
+log2FC_chlor <- sapply(sig_rows_chlor, function(met){
+  
+  B_vals_chlor  <- (num_df_sig_chlor[ocu_final$bleaching == "B", met])
+  NB_vals_chlor <- (num_df_sig_chlor[ocu_final$bleaching == "NB", met])
+
+  mean_B_chlor  <- mean(B_vals_chlor,  na.rm = TRUE)
+  mean_NB_chlor <- mean(NB_vals_chlor, na.rm = TRUE)
+
+  log2(mean_B_chlor / mean_NB_chlor)
+})
+
+log2FC_df_chlor <- data.frame(
+  metabolite = significant_features_chlor,
+  log2FC = log2FC_chlor
+)
+
+log2FC_df_chlor <- log2FC_df_chlor |>
+  filter(
+    log2FC >= 0
+  )
+
+write.csv(log2FC_df_chlor, file = "rfp_chlor_sig_overinB.csv")
+```
