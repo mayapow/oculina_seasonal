@@ -1,0 +1,102 @@
+---
+title: "rfpermute symbiont"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(dplyr)
+library(randomForest)
+library(rfPermute)
+library(vegan)
+library(ggplot2)
+```
+
+```{r}
+oculina <- read.csv("Data/Metabolomics/oculina_superset_final.csv")
+ocu_meta <- read.csv("Data/Metabolomics/oculina_metabolomics_metadata.csv")
+
+num_df <- oculina[, -c(1:27, 31358:31386)]
+
+num_df_phen <- num_df |>
+  mutate(Phenotype = oculina$bleaching)
+
+
+num_df_final <- ocu_final[,-c(1:39, 16397:16426)]
+num_df_final_phen <- num_df_final |>
+  mutate(Phenotype = ocu_final$bleaching)
+
+
+```
+
+rfpermute symbiont density
+
+```{r}
+num_df_final_sym <- num_df_final |>
+  mutate(sym = ocu_final$sym_cm2)
+```
+
+```{r}
+#| echo: false
+
+rfp_sym <- rfPermute(sym ~., data = num_df_final_sym, na.action = na.omit, ntree = 500, num.rep = 100)
+
+rfp_sym
+
+rfp_table_sym <- as.data.frame(importance(rfp_sym))  # Convert to a data frame
+rfp_table_sym <- tibble::rownames_to_column(rfp_table_sym, var = "Feature")
+print(rfp_table_sym)  # Display in console
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+write.csv(rfp_table_sym, file = "rfp_table_sym.csv")
+```
+
+```{r}
+
+rfp_sym_read <- read.csv("rfp_table_sym.csv")
+significant_features_sym <- rfp_sym_read %>% filter(`X.IncMSE.pval` < 0.05)
+print(significant_features_sym)
+```
+
+log2fc:
+
+```{r}
+
+sig_rows_sym <- significant_features_sym$Feature
+
+num_df_sig_sym <- data.matrix(num_df_final |>
+  select(all_of(sig_rows_sym)))
+
+log2FC_sym <- sapply(sig_rows_sym, function(met){
+  
+  B_vals_sym  <- (num_df_sig_sym[ocu_final$bleaching == "B", met])
+  NB_vals_sym <- (num_df_sig_sym[ocu_final$bleaching == "NB", met])
+
+  mean_B_sym  <- mean(B_vals_sym,  na.rm = TRUE)
+  mean_NB_sym <- mean(NB_vals_sym, na.rm = TRUE)
+
+  log2(mean_B_sym / mean_NB_sym)
+})
+
+log2FC_df_sym <- data.frame(
+  metabolite = significant_features_sym,
+  log2FC = log2FC_sym
+)
+
+log2FC_df_sym_upInB <- log2FC_df_sym |>
+  filter(
+    log2FC >= 0
+  )
+
+```
