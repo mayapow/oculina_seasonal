@@ -229,7 +229,7 @@ chla_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=ug_chla_cm, fill =
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
 chla_nov_depth_sa_box
 
-ggsave(here("Output", "Nov_2024","chla_nov_depth_sa_box.png"), device = "pdf", h = 6, w = 10, chla_nov_depth_sa_box)
+ggsave(here("Output", "Nov_2024","chla_nov_depth_sa_box.jpg"),  h = 6, w = 10, chla_nov_depth_sa_box)
 ```
 
 Stats
@@ -256,13 +256,13 @@ sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=sym_cm2, fill = dep
   geom_jitter(alpha=0.8, width=0.2)+
   theme_classic(base_size = 22)+
   labs(x = "Fragment symbiotic state", y = "Symbiont density (cells per cm2)")+
-  stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
+  stat_summary(data = sym_chla, aes(x = depth_sa, y = sym_cm2), geom = "text", fun = max, vjust = -0.5, size = 8,
                label = c("a", "b", "b"))+ 
   theme(legend.position = "none")+
   scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
 sym_nov_depth_sa_box
 
-ggsave(here("Output", "Nov_2024","sym_nov_depth_sa_box.png"), device = "pdf", h = 6, w = 10, sym_nov_depth_sa_box)
+ggsave(here("Output", "Nov_2024","sym_nov_depth_sa_box.jpg"),  h = 6, w = 10, sym_nov_depth_sa_box)
 ```
 
 Stats
@@ -287,14 +287,14 @@ chla_sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=chla_pg_sym, f
   geom_boxplot()+
   geom_jitter(alpha=0.8, width=0.2)+
   theme_classic(base_size = 22)+
-  stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
+  stat_summary(data = sym_chla, aes(x = depth_sa, y = chla_pg_sym), geom = "text", fun = max, vjust = -0.5, size = 8,
                label = c("a", "a", "b"))+ 
   labs(x = "Fragment symbiotic state", y = "Chlorophyll a (pg per symbiont cell)")+
   theme(legend.position = "none")+
   scale_fill_manual(values = c("white","lightyellow","brown"))
 chla_sym_nov_depth_sa_box
 
-ggsave(here("Output", "Nov_2024","chla_sym_nov_depth_sa_box.png"), device = "pdf", h = 6, w = 10, chla_sym_nov_depth_sa_box)
+ggsave(here("Output", "Nov_2024","chla_sym_nov_depth_sa_box.jpg"),  h = 6, w = 10, chla_sym_nov_depth_sa_box)
 ```
 
 Stats
@@ -324,7 +324,16 @@ sym_chla_scatter <- ggplot(sym_chla, aes(x = sym_cm2, y = ug_chla_cm, fill = dep
        y = "Chlorophyll a (ug per cm2)", 
        fill = "Fragment symbiotic state")
 sym_chla_scatter
-ggsave(here("Output", "Nov_2024","sym_chla_scatter.png"), device = "pdf", h = 6, w = 10, sym_chla_scatter)
-
-##this indicates that we likely need to remove outliers from this data!! more to do!!
+ggsave(here("Output", "Nov_2024","sym_chla_scatter.jpg"),  h = 6, w = 10, sym_chla_scatter)
 ```
+
+### Multi-panel figure
+
+```{r}
+box_plots <- ggarrange(chla_nov_depth_sa_box, sym_nov_depth_sa_box, chla_sym_nov_depth_sa_box, , nrow=2, ncol = 2, labels = c("A","B","C","D"),font.label = list(size = 40))
+
+sym_chla_scatter
+ggsave(here("Output", "Nov_2024","oc_physio_panel.jpg"), h = 15, w = 15, oc_physio)
+```
+
+I THINK I WANT TO CHANGE THESE TO BE THE MEANS +/- SE INSTEAD OF BOX PLOTS AND COLOR THE POINTS
