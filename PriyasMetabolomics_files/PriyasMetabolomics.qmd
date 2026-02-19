@@ -59,6 +59,67 @@ pcoa_oculina <-ggplot(data = pcoa_df_ocu, aes(x = PC1, y = PC2, color = Phenotyp
 pcoa_oculina
 ```
 
+Same PCoA, minus 5 outliers:
+
+```{r}
+
+num_df_no_out <- oculina[-c(32, 34, 57, 61), -c(1:27, 31358:31386)]
+  
+metapheno <- oculina[-c(32, 34, 57, 61),]$bleaching
+meta_id <- oculina[-c(32, 34, 57, 61),]$id
+
+
+braycurtis_no_out <- vegdist(num_df_no_out, method = "bray")
+pcoa_result_no_out <- cmdscale(braycurtis_no_out, eig = TRUE)
+eig_vals_no_out <- pcoa_result_no_out$eig
+variance_explained_no_out <- eig_vals_no_out/sum(eig_vals_no_out) * 100
+
+pcoa_df_ocu_no_out <- data.frame(
+  PC1 = pcoa_result_no_out$points[, 1],
+  PC2 = pcoa_result_no_out$points[, 2],
+  Phenotype = metapheno,
+  ID = meta_id
+)
+
+
+pcoa_oculina_no_out <-ggplot(data = pcoa_df_ocu_no_out, aes(x = PC1, y = PC2, color = Phenotype)) + 
+  geom_point() +
+ 
+  scale_color_manual(values = c("B" = "orange", "NB" = "blue")) +
+  
+  theme_classic(base_size = 8) +
+  theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
+        ) +
+
+  labs(
+       x = paste("PC1 ", sprintf("%.1f%%", variance_explained[1])),
+       y = paste("PC2 ", sprintf("%.1f%%", variance_explained[2])),
+       ) +
+  theme(plot.margin=ggplot2::margin(t=8,b=8,r=15,l=20,unit="pt"))
+   
+pcoa_oculina_no_out
+```
+
+PERMANOVA with outliers:
+
+```{r}
+
+permanova_w_outliers <- adonis2(braycurtis ~ bleaching, data = oculina, permutations = 999)
+
+# Display the results
+print(permanova_w_outliers)
+
+```
+
+PERMANOVA without outliers:
+
+```{r}
+permanova_no_outliers <- adonis2(braycurtis_no_out ~ bleaching, data = oculina[-c(32, 34, 57, 61),], permutations = 999)
+
+# Display the results
+print(permanova_no_outliers)
+```
+
 random forest model to predict bleaching phenotype using all metabolites:
 
 ```{r}

@@ -100,3 +100,19 @@ log2FC_df_sym_upInB <- log2FC_df_sym |>
   )
 
 ```
+
+```{r}
+significant_features_sym_plot <- log2FC_df_sym |>
+  arrange(desc(`metabolite.X.IncMSE`)) |>
+  mutate(Phenotype = if_else(log2FC > 0, "Bleached", "Non-Bleached")) |>
+  slice_head(n = 50)
+
+ggplot(significant_features_sym_plot, aes(x = metabolite.Feature, y = `metabolite.X.IncMSE`, fill = Phenotype)) +
+  scale_fill_manual(values = c("Bleached" = "orange", "Non-Bleached" = "blue")) +
+  geom_col() +
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Importance after rfPermute for Symbiont Density Regression",
+       x = "Feature",
+       y = "Percent Increase in Mean Squared Error") +
+  theme_minimal()
+```

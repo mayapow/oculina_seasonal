@@ -1,0 +1,30 @@
+---
+title: "summarystats"
+format: html
+---
+
+```{r}
+library(dplyr)
+library(randomForest)
+library(rfPermute)
+library(vegan)
+library(ggplot2)
+library(readxl)
+library(tidyr)
+```
+
+```{r}
+
+feats_with_classes <- read_excel("C:/Users/priya/Downloads/Ty_superset_metabolites.xlsx")
+```
+
+```{r}
+write.csv(feats_with_classes, file = "all_feat_classes.cv")
+```
+
+```{r}
+
+ocu_comp_class <- oculina |>
+  pivot_longer(cols = c(28:31329), names_to = "Feature", values_to = "Qty")
+  
+```
