@@ -1,0 +1,95 @@
+---
+title: "depth_and_pheno"
+format: html
+---
+
+```{r}
+library(dplyr)
+library(randomForest)
+library(rfPermute)
+library(vegan)
+library(ggplot2)
+```
+
+```{r}
+depthsa_num <- oculina_final[, c(40:16396, 16426)]
+```
+
+rfpermute classification 3 ways on oculina_final:
+
+```{r}
+depthsa_num$depth_sa <- as.factor(depthsa_num$depth_sa)
+rfp_phen_dep <- rfPermute(depth_sa ~., data = depthsa_num, na.action = na.omit, ntree = 500, num.rep = 100)
+
+rfp_phen_dep
+
+rfp_table_dep <- as.data.frame(importance(rfp_phen_dep))  # Convert to a data frame
+rfp_table_dep <- tibble::rownames_to_column(rfp_table_dep, var = "Feature")
+print(rfp_table_dep)  # Display in console
+
+
+```
+
+```{r}
+significant_features_dep <- rfp_table_dep %>% filter(`Deep Aposymbiotic.pval`< 0.05 & `Shallow Aposymbiotic.pval` < 0.05 & `Shallow Symbiotic.pval` < 0.05)  # Adjust p-value threshold as needed
+
+print(significant_features_dep)
+write.csv(significant_features_dep, file = "sig_feat_dep_rfpermute.csv")
+```
+
+```{r}
+sig_feat_dep <- read.csv("sig_feat_dep_rfpermute.csv")
+sig_rows_dep <- sig_feat_dep$Feature
+
+
+num_df_sig_dep <- data.matrix(num_df_final |>
+  select(all_of(sig_rows_dep)))
+
+log2FC_dep <- sapply(sig_rows_dep, function(met){
+  
+  A_vals  <- (num_df_sig_dep[ocu_final$bleaching == "B", met])
+  S_vals <- (num_df_sig_dep[ocu_final$bleaching == "NB", met])
+
+  mean_A  <- mean(A_vals,  na.rm = TRUE)
+  mean_S <- mean(S_vals, na.rm = TRUE)
+
+  log2(mean_A / mean_S)
+})
+
+log2FC_df_dep <- data.frame(
+  metabolite = sig_feat_dep,
+  log2FC = log2FC_dep
+)
+```
+
+```{r}
+
+log2FC_df_dep_meta <- log2FC_df_dep |>
+  inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
+  select(metabolite.Feature, metabolite.MeanDecreaseAccuracy, metabolite.MeanDecreaseGini, log2FC, compound_class, origin, npc_number_superclass)
+```
+
+```{r}
+library(ggpattern)
+sig_feat_dep_plot <- log2FC_df_dep_meta |>
+  arrange(desc(metabolite.MeanDecreaseAccuracy)) |>
+  slice_head(n = 50)
+
+ggplot(sig_feat_dep_plot, aes(
+  x = reorder(metabolite.Feature, metabolite.MeanDecreaseAccuracy), 
+  y = metabolite.MeanDecreaseAccuracy, 
+  fill = compound_class,
+  pattern = origin)) +
+  
+  scale_pattern_manual(values = c("host & symbiont" = "stripe", "symbiont" = "none", "symbiosis-specific" = "circle")) +
+  
+  geom_col_pattern(
+  pattern_density = 0.2,
+  pattern_spacing = 0.03
+  ) +
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Importance after rfPermute for Depth and Phenotype Classification",
+       x = "Feature",
+       y = "Mean Decrease in Accuracy") +
+  theme_minimal()
+```

@@ -64,7 +64,7 @@ write.csv(rfp_table_sym, file = "rfp_table_sym.csv")
 
 ```{r}
 
-rfp_sym_read <- read.csv("rfp_table_sym.csv")
+rfp_sym_read <- read.csv("PriyasMetabolomics_files/rfp_table_sym.csv")
 significant_features_sym <- rfp_sym_read %>% filter(`X.IncMSE.pval` < 0.05)
 print(significant_features_sym)
 ```
@@ -104,12 +104,53 @@ log2FC_df_sym_upInB <- log2FC_df_sym |>
 ```{r}
 significant_features_sym_plot <- log2FC_df_sym |>
   arrange(desc(`metabolite.X.IncMSE`)) |>
-  mutate(Phenotype = if_else(log2FC > 0, "Bleached", "Non-Bleached")) |>
+  mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic")) |>
   slice_head(n = 50)
 
-ggplot(significant_features_sym_plot, aes(x = metabolite.Feature, y = `metabolite.X.IncMSE`, fill = Phenotype)) +
-  scale_fill_manual(values = c("Bleached" = "orange", "Non-Bleached" = "blue")) +
-  geom_col() +
+significant_features_sym_plot <- significant_features_sym_plot |>
+  inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
+  select(metabolite.Feature, 
+         `metabolite.X.IncMSE`, 
+         Sign, 
+         compound_class, 
+         origin, 
+         npc_number_superclass)
+
+significant_features_sym_plot <- significant_features_sym_plot |>
+  mutate(Symbol  = case_when(origin == "host & symbiont" ~ "h&s",
+                             origin == "symbiont" ~ "s",
+                             origin == "symbiosis-specific" ~ "s-s",
+                             origin == "host" ~ "h")) |>
+  slice_head(n = 50) 
+
+
+
+```
+
+```{r, fig.height = 10, fig.width = 10}
+
+library(ggpattern)
+
+
+ggplot(significant_features_sym_plot, 
+       aes(x = reorder(metabolite.Feature, `metabolite.X.IncMSE`),
+           y = `metabolite.X.IncMSE`,
+           fill = compound_class,
+           pattern = Sign)) +
+  
+  
+  scale_fill_manual(values = c("#FBE183FF", "#F4C40FFF", "#FE9B00FF", "#D8443CFF", "#9B3441FF", "#DE597CFF", "#E87B89FF", "#E6A2A6FF", "#AA7AA1FF", "#9F5691FF", "#633372FF", "#1F6E9CFF", "#2B9B81FF", "#92C051FF")) +
+  
+  
+  geom_col_pattern(
+  pattern_density = 0.2,
+  pattern_spacing = 0.03
+  ) +
+  
+
+  geom_text(aes(label = Symbol), vjust = 0, hjust = 0, size = 4) +
+  
+  
   coord_flip() +  # Flip for better readability
   labs(title = "Variable Importance after rfPermute for Symbiont Density Regression",
        x = "Feature",

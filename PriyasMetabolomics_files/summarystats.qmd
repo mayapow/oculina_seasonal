@@ -24,7 +24,74 @@ write.csv(feats_with_classes, file = "all_feat_classes.cv")
 
 ```{r}
 
-ocu_comp_class <- oculina |>
-  pivot_longer(cols = c(28:31329), names_to = "Feature", values_to = "Qty")
+num_df_final_id <- oculina_final[, c(6, 40:16396)]
   
+```
+
+```{r}
+```
+
+```{r}
+Oculina_long <- num_df_final_id |>
+  pivot_longer(-id,
+               names_to = "Metabolite",
+               values_to = "Abundance")
+```
+
+```{r}
+Oculina_joined <- Oculina_long %>%
+  left_join(feats_with_classes %>%
+              select(metabolite, compound_class),
+            by = c("Metabolite" = "metabolite"))
+```
+
+```{r}
+Oculina_class <- Oculina_joined %>%
+  group_by(id, compound_class) %>%
+  summarise(Total_Abundance = sum(Abundance, na.rm = TRUE),
+            .groups = "drop")
+```
+
+```{r}
+Oculina_class_wide <- Oculina_class %>%
+  pivot_wider(names_from = compound_class,
+              values_from = Total_Abundance,
+              values_fill = 0)
+```
+
+```{r}
+
+# ocu_final_anno <-
+#   num_df_final |>
+#   select(where(colnames IN feats_with_classes AND feats_with_classes(coraldb_compound_name))) NOT  NULL)
+# 
+# num_df_final |>
+#   summarise(feat_total = [], total_annotated = 
+```
+
+```{r}
+superset_feats_annotated <-
+  feats_with_classes |>
+  filter(coraldb_compound_name != 'NA')
+```
+
+```{r}
+Ocu_joined_anno <- Oculina_long %>%
+  right_join(superset_feats_annotated %>%
+              select(metabolite, compound_class, coraldb_compound_name, origin),
+            by = c("Metabolite" = "metabolite"))
+```
+
+```{r}
+Ocu_wide_anno <- Ocu_joined_anno %>%
+  pivot_wider(-c(compound_class, coraldb_compound_name, origin),
+              names_from = Metabolite,
+              values_from = Abundance) 
+```
+
+entropy, richness, evenness:
+
+```{r}
+# div_met_ocu_full <- oculina_final |>
+#   mutate(Richness = )
 ```

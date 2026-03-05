@@ -20,28 +20,28 @@ ocu_meta <- read.csv("Data/Metabolomics/oculina_metabolomics_metadata.csv")
 print(oculina$chla_pg_sym)
 ```
 
-PCoA:
+PCoA w/ outliers **on oculina_final:**
 
 ```{r}
-num_df <- oculina[, -c(1:27, 31358:31386)]
-metapheno <- oculina$bleaching
-meta_id <- oculina$id
+
+metapheno_fin <- oculina_final$bleaching
+meta_id_fin <- oculina_final$id
 
 
-braycurtis <- vegdist(num_df, method = "bray")
-pcoa_result <- cmdscale(braycurtis, eig = TRUE)
-eig_vals <- pcoa_result$eig
-variance_explained <- eig_vals/sum(eig_vals) * 100
+braycurtis_fin <- vegdist(num_df_final, method = "bray")
+pcoa_result_fin <- cmdscale(braycurtis_fin, eig = TRUE)
+eig_vals_fin <- pcoa_result_fin$eig
+variance_explained_fin <- eig_vals_fin/sum(eig_vals_fin) * 100
 
-pcoa_df_ocu <- data.frame(
-  PC1 = pcoa_result$points[, 1],
-  PC2 = pcoa_result$points[, 2],
-  Phenotype = metapheno,
-  ID = meta_id
+pcoa_df_ocu_fin <- data.frame(
+  PC1 = pcoa_result_fin$points[, 1],
+  PC2 = pcoa_result_fin$points[, 2],
+  Phenotype = metapheno_fin,
+  ID = meta_id_fin
 )
 
 
-pcoa_oculina <-ggplot(data = pcoa_df_ocu, aes(x = PC1, y = PC2, color = Phenotype)) + 
+pcoa_oculina_fin <-ggplot(data = pcoa_df_ocu_fin, aes(x = PC1, y = PC2, color = Phenotype)) + 
   geom_point() +
  
   scale_color_manual(values = c("B" = "orange", "NB" = "blue")) +
@@ -51,38 +51,39 @@ pcoa_oculina <-ggplot(data = pcoa_df_ocu, aes(x = PC1, y = PC2, color = Phenotyp
         ) +
 
   labs(
-       x = paste("PC1 ", sprintf("%.1f%%", variance_explained[1])),
-       y = paste("PC2 ", sprintf("%.1f%%", variance_explained[2])),
+       x = paste("PC1 ", sprintf("%.1f%%", variance_explained_fin[1])),
+       y = paste("PC2 ", sprintf("%.1f%%", variance_explained_fin[2])),
        ) +
   theme(plot.margin=ggplot2::margin(t=8,b=8,r=15,l=20,unit="pt"))
+
+
+
    
-pcoa_oculina
+pcoa_oculina_fin
 ```
 
-Same PCoA, minus 5 outliers:
+PCoA w/out outliers **on oculina_final:**
 
 ```{r}
-
-num_df_no_out <- oculina[-c(32, 34, 57, 61), -c(1:27, 31358:31386)]
-  
-metapheno <- oculina[-c(32, 34, 57, 61),]$bleaching
-meta_id <- oculina[-c(32, 34, 57, 61),]$id
+num_df_fin_no_out <- num_df_final[-c(32, 34, 57, 61),]
+metapheno_fin_no_out <- oculina_final[-c(32, 34, 57, 61),]$bleaching
+meta_id_fin_no_out <- oculina_final[-c(32, 34, 57, 61),]$id
 
 
-braycurtis_no_out <- vegdist(num_df_no_out, method = "bray")
-pcoa_result_no_out <- cmdscale(braycurtis_no_out, eig = TRUE)
-eig_vals_no_out <- pcoa_result_no_out$eig
-variance_explained_no_out <- eig_vals_no_out/sum(eig_vals_no_out) * 100
+braycurtis_fin_no_out <- vegdist(num_df_fin_no_out, method = "bray")
+pcoa_result_fin_no_out <- cmdscale(braycurtis_fin_no_out, eig = TRUE)
+eig_vals_fin_no_out <- pcoa_result_fin_no_out$eig
+variance_explained_fin_no_out <- eig_vals_fin_no_out/sum(eig_vals_fin_no_out) * 100
 
-pcoa_df_ocu_no_out <- data.frame(
-  PC1 = pcoa_result_no_out$points[, 1],
-  PC2 = pcoa_result_no_out$points[, 2],
-  Phenotype = metapheno,
-  ID = meta_id
+pcoa_df_ocu_fin_no_out <- data.frame(
+  PC1 = pcoa_result_fin_no_out$points[, 1],
+  PC2 = pcoa_result_fin_no_out$points[, 2],
+  Phenotype = metapheno_fin_no_out,
+  ID = meta_id_fin_no_out
 )
 
 
-pcoa_oculina_no_out <-ggplot(data = pcoa_df_ocu_no_out, aes(x = PC1, y = PC2, color = Phenotype)) + 
+pcoa_oculina_fin_no_out <-ggplot(data = pcoa_df_ocu_fin_no_out, aes(x = PC1, y = PC2, color = Phenotype)) + 
   geom_point() +
  
   scale_color_manual(values = c("B" = "orange", "NB" = "blue")) +
@@ -92,35 +93,38 @@ pcoa_oculina_no_out <-ggplot(data = pcoa_df_ocu_no_out, aes(x = PC1, y = PC2, co
         ) +
 
   labs(
-       x = paste("PC1 ", sprintf("%.1f%%", variance_explained[1])),
-       y = paste("PC2 ", sprintf("%.1f%%", variance_explained[2])),
+       x = paste("PC1 ", sprintf("%.1f%%", variance_explained_fin_no_out[1])),
+       y = paste("PC2 ", sprintf("%.1f%%", variance_explained_fin_no_out[2])),
        ) +
   theme(plot.margin=ggplot2::margin(t=8,b=8,r=15,l=20,unit="pt"))
+
+
+
    
-pcoa_oculina_no_out
+pcoa_oculina_fin_no_out
 ```
 
-PERMANOVA with outliers:
+PERMANOVA with outliers **on 'oculina_final'**:
 
 ```{r}
 
-permanova_w_outliers <- adonis2(braycurtis ~ bleaching, data = oculina, permutations = 999)
+permanova_fin <- adonis2(braycurtis_fin ~ bleaching, data = oculina_final, permutations = 999)
 
 # Display the results
-print(permanova_w_outliers)
+print(permanova_fin)
 
 ```
 
-PERMANOVA without outliers:
+PERMANOVA without outliers **on 'oculina_final'**:
 
 ```{r}
-permanova_no_outliers <- adonis2(braycurtis_no_out ~ bleaching, data = oculina[-c(32, 34, 57, 61),], permutations = 999)
+permanova_fin_no_out <- adonis2(braycurtis_fin_no_out ~ bleaching, data = oculina_final[-c(32, 34, 57, 61),], permutations = 999)
 
 # Display the results
-print(permanova_no_outliers)
+print(permanova_fin_no_out)
 ```
 
-random forest model to predict bleaching phenotype using all metabolites:
+random forest model to predict bleaching phenotype using all metabolites **on 'oculina'**:
 
 ```{r}
 
@@ -143,7 +147,7 @@ class(num_df_final_phen$Phenotype)
 #rf_phen
 ```
 
-random forest model to predict chlorophyll a using all metabolites:
+random forest model to predict chlorophyll a using all metabolites **on oculina_final:**:
 
 ```{r}
 
@@ -162,7 +166,7 @@ rf_chla
 
 ```
 
-random forest model to predict symbiont density using all metabolites:
+random forest model to predict symbiont density using all metabolites **on oculina_final:**:
 
 ```{r}
 num_df_final_sym <- num_df_final |>
@@ -185,7 +189,7 @@ random forest model to predict \[physio #3\] using all metabolites:
 
 ```
 
-rfPermute of phenotype
+rfPermute of phenotype **on oculina_final:**
 
 ```{r}
 
@@ -203,7 +207,7 @@ print(significant_features)
 
 ```
 
-log2 fold change of all significant features:
+log2 fold change of all significant features **on oculina_final:**:
 
 ```{r}
 
@@ -235,16 +239,34 @@ log2FC_df <- data.frame(
 
 ```
 
-variable importance plot from rfpermute by phenotype:
+variable importance plot from rfpermute by phenotype **on oculina_final:**:
 
 ```{r}
+library(ggpattern)
 
-sig_feat_phen_plot <- sig_feat_phen |>
-  arrange(desc(MeanDecreaseAccuracy)) |>
+sig_feat_phen_joined <- log2FC_df |>
+  inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
+  select(metabolite.Feature, 
+         `metabolite.MeanDecreaseAccuracy`, 
+         compound_class, 
+         origin, 
+         npc_number_superclass)
+
+sig_feat_phen_plot <- sig_feat_phen_joined |>
+  arrange(desc(metabolite.MeanDecreaseAccuracy)) |>
   slice_head(n = 50)
 
-ggplot(sig_feat_phen_plot, aes(x = Feature, y = MeanDecreaseAccuracy)) +
-  geom_col() +
+ggplot(sig_feat_phen_plot, 
+       aes(x = reorder(metabolite.Feature, `metabolite.MeanDecreaseAccuracy`), 
+           y = `metabolite.MeanDecreaseAccuracy`,
+           fill = compound_class
+           )) +
+  geom_col(
+    ) +
+  
+  scale_fill_manual(values = c("#C969A1FF", "#CE4441FF", "#EE8577FF", "#EB7926FF", "#FFBB44FF", "#859B6CFF", "#62929AFF", "#004F63FF", "#122451FF")
+) +
+  
   coord_flip() +  # Flip for better readability
   labs(title = "Variable Importance after rfPermute for Phenotype Classification",
        x = "Feature",
@@ -253,7 +275,7 @@ ggplot(sig_feat_phen_plot, aes(x = Feature, y = MeanDecreaseAccuracy)) +
 
 ```
 
-rfpermute regression by chlorophyll:
+rfpermute regression by chlorophyll **on oculina_final:**:
 
 ```{r}
 rfp_chlor <- rfPermute(chla ~., data = num_df_final_chla, na.action = na.omit, ntree = 500, num.rep = 100)
@@ -280,7 +302,7 @@ significant_features_chlor <- rfp_chlor %>% filter(`X.IncMSE.pval` < 0.05)
 print(significant_features_chlor)
 ```
 
-log2FC for significant features in chlorophyll; to determine B and NB over representation for these features
+log2FC for significant features in chlorophyll; to determine B and NB over representation for these features **on oculina_final:**
 
 ```{r}
 sig_rows_chlor <- significant_features_chlor$Feature
@@ -313,14 +335,50 @@ write.csv(log2FC_df_chlor_upInB, file = "rfp_chlor_sig_overinB.csv")
 ```
 
 ```{r}
+library(ggpattern)
+
+
 significant_features_chlor_plot <- log2FC_df_chlor |>
   arrange(desc(`metabolite.X.IncMSE`)) |>
-  mutate(Sign = if_else(log2FC > 0, "Bleached", "Non-Bleached")) |>
-  slice_head(n = 50)
+  mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic")) |>
+  slice_head(n = 50) 
 
-ggplot(significant_features_chlor_plot, aes(x = metabolite.Feature, y = `metabolite.X.IncMSE`, fill = Sign)) +
-  scale_fill_manual(values = c("Bleached" = "orange", "Non-Bleached" = "blue")) +
-  geom_col() +
+significant_features_chlor_plot <- significant_features_chlor_plot |>
+  inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
+  select(metabolite.Feature, 
+         `metabolite.X.IncMSE`, 
+         Sign, 
+         compound_class, 
+         origin, 
+         npc_number_superclass)
+
+significant_features_chlor_plot <- significant_features_chlor_plot |>
+  mutate(Symbol  = case_when(origin == "host & symbiont" ~ "\U2605",
+                             origin == "symbiont" ~ "\U2713",
+                             origin == "symbiosis-specific" ~ "\U2660"))
+
+
+```
+
+```{r, fig.height = 10, fig.width = 10}
+ggplot(significant_features_chlor_plot, 
+       aes(x = reorder(metabolite.Feature, `metabolite.X.IncMSE`), 
+           y = `metabolite.X.IncMSE`,
+           fill = compound_class,
+           pattern = Sign
+           )) +
+ # scale_fill_manual(values = c("Bleached" = "orange", "Non-Bleached" = "blue")) +
+  geom_col_pattern(
+  pattern_density = 0.2,
+  pattern_spacing = 0.03
+  ) +
+  
+  
+  scale_fill_manual(values = c("#FBE183FF", "#F4C40FFF", "#FE9B00FF", "#D8443CFF", "#9B3441FF", "#DE597CFF", "#E87B89FF", "#E6A2A6FF", "#AA7AA1FF", "#9F5691FF", "#633372FF", "#1F6E9CFF", "#2B9B81FF", "#92C051FF")
+
+) +
+  geom_text(aes(label = Symbol), vjust = 0, hjust = 0, size = 4) +
+  
   coord_flip() +  # Flip for better readability
   labs(title = "Variable Importance after rfPermute for Chloropyll Regression",
        x = "Feature",
