@@ -11,6 +11,7 @@ library(vegan)
 library(ggplot2)
 library(readxl)
 library(tidyr)
+library(ggpubr)
 ```
 
 ```{r}
@@ -92,6 +93,90 @@ Ocu_wide_anno <- Ocu_joined_anno %>%
 entropy, richness, evenness:
 
 ```{r}
-# div_met_ocu_full <- oculina_final |>
-#   mutate(Richness = )
+write.csv(ocu_fin_div, file = "oculina_final_diversity.csv")
+```
+
+```{r}
+#ocu_fin_div <- read.csv("oculina_final_diversity.csv")
+
+ocu_fin_div <- ocu_fin_div |>
+  mutate(Phenotype = bleaching) |>
+    mutate(Phenotype = recode(Phenotype,
+                              "B" = "Aposymbiotic",
+                              "NB" = "Symbiotic"))
+
+ggplot(ocu_fin_div, aes(x = Phenotype, y = Richness, fill = Phenotype)) +
+  geom_boxplot(outlier.shape = NA) +
+  scale_fill_manual(values = c("Aposymbiotic" = "orange", "Symbiotic" = "blue")) +
+  theme_minimal() +
+   geom_point(
+    position = position_jitterdodge(
+      jitter.width = 0.2,   # stay within each box
+      jitter.height = 0,
+      dodge.width  = 1,     
+    ), 
+    
+    shape = 21,               # fill + outline
+    color = "black",          # outline
+    stroke = 0.45,
+    size = 1,
+    alpha = 0.8
+  ) +
+  
+  stat_compare_means(aes(group = Phenotype), 
+                     method = "kruskal.test", 
+                     label = "p.format",
+                     ) 
+```
+
+```{r}
+ggplot(ocu_fin_div, aes(x = Phenotype, y = Entropy, fill = Phenotype)) +
+  geom_boxplot(outlier.shape = NA) +
+  scale_fill_manual(values = c("Aposymbiotic" = "orange", "Symbiotic" = "blue")) +
+  theme_minimal() +
+   geom_point(
+    position = position_jitterdodge(
+      jitter.width = 0.2,   # stay within each box
+      jitter.height = 0,
+      dodge.width  = 1,
+      #seed = 1,
+    ), 
+    
+    shape = 21,               # fill + outline
+    color = "black",          # outline
+    stroke = 0.45,
+    size = 1,
+    alpha = 0.8
+  ) +
+  
+  stat_compare_means(aes(group = Phenotype), 
+                     method = "kruskal.test", 
+                     label = "p.format",
+                     ) 
+```
+
+```{r}
+ggplot(ocu_fin_div, aes(x = Phenotype, y = Evenness, fill = Phenotype)) +
+  geom_boxplot(outlier.shape = NA) +
+  scale_fill_manual(values = c("Aposymbiotic" = "orange", "Symbiotic" = "blue")) +
+  theme_minimal() +
+   geom_point(
+    position = position_jitterdodge(
+      jitter.width = 0.2,   # stay within each box
+      jitter.height = 0,
+      dodge.width  = 1,
+      #seed = 1,
+    ), 
+    
+    shape = 21,               # fill + outline
+    color = "black",          # outline
+    stroke = 0.45,
+    size = 1,
+    alpha = 0.8
+  ) +
+  
+  stat_compare_means(aes(group = Phenotype), 
+                     method = "kruskal.test", 
+                     label = "p.format",
+                     ) 
 ```
