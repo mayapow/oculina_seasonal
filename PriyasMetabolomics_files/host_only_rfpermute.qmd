@@ -1,0 +1,78 @@
+---
+title: "host_only_rfpermute"
+format: html
+---
+
+```{r}
+library(dplyr)
+library(randomForest)
+library(rfPermute)
+library(vegan)
+library(ggplot2)
+library(readxl)
+library(tidyr)
+library(ggpubr)
+```
+
+```{r}
+num_df_final_fullid <-
+  oculina_final[, -c(1:7, 9:39, 16397:16426)]
+
+num_df_final_fullid <- na.omit(num_df_final_fullid)
+```
+
+```{r}
+Oculina_long <- num_df_final_fullid |>
+  pivot_longer(-full_id,
+               names_to = "Metabolite",
+               values_to = "Abundance")
+```
+
+```{r}
+Oculina_joined_host <- Oculina_long %>%
+  left_join(feats_with_classes %>%
+              select(metabolite, origin),
+            by = c("Metabolite" = "metabolite")) |>
+  filter(origin == "host") 
+```
+
+```{r}
+Oculina_host_wide <- Oculina_joined_host %>%
+  pivot_wider(names_from = Metabolite,
+              values_from = Abundance)
+
+Oculina_host_wide_b <- Oculina_host_wide |>
+  left_join(oculina_final |>
+              select(full_id, bleaching))
+```
+
+```{r}
+num_df_ocu_host_only <- Oculina_host_wide_b[, -c(1, 2)]
+num_df_ocu_host_only$bleaching <- as.factor(num_df_ocu_host_only$bleaching)
+```
+
+```{r}
+rfp_phen_host <- rfPermute(bleaching ~., data = num_df_ocu_host_only, na.action = na.omit, ntree = 500, num.rep = 1000)
+
+rfp_phen_host
+
+rfp_table_host <- as.data.frame(importance(rfp_phen_host))  # Convert to a data frame
+rfp_table_host <- tibble::rownames_to_column(rfp_table_host, var = "Feature")
+print(rfp_table_host)  # Display in console
+
+significant_features_host <- rfp_table_host %>% filter(B.pval < 0.05 & NB.pval < 0.05)  # Adjust p-value threshold as needed
+
+print(significant_features_host)
+```
+
+```{r}
+write.csv(significant_features_host, file = "sig_feat_phenotype_host_rfpermute.csv")
+```
+
+```{r}
+sig_feat_phen_host <- read.csv("sig_feat_phenotype_rfpermute.csv")
+```
+
+```{r}
+
+```
