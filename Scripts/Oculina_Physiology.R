@@ -89,18 +89,17 @@ summary(DW.mod.stress)
 
 
 
-##### Chlorophyll a#####
+##### read in Chlorophyll a NOV 24#####
 
-
-#read in dataframe
-sym_chla <- read.csv(here("Data", "Nov_2024", "oculina_nov24_chla.csv"))
-meta <- read.csv(here("Data", "Nov_2024", "oculina_nov24_metadata.csv"))
+#sym_chla <- read.csv(here("Data", "Nov_2024", "oculina_nov24_chla.csv"))
+#meta <- read.csv(here("Data", "Nov_2024", "oculina_nov24_metadata.csv"))
 
 #remove samples that have no data
-sym_chla <- sym_chla %>% 
-  left_join(meta, by = "sample_ID")
-sym_chla <- sym_chla %>% filter(full_ID != "A12-1124") 
+#sym_chla <- sym_chla %>% 
+#  left_join(meta, by = "sample_ID")
+#sym_chla <- sym_chla %>% filter(full_ID != "A12-1124") 
 
+#checks do see if data is still in sample set
 sym_chla %>% 
   filter(full_ID == "A12-1124")
 #here A12 from Nov 24 has no surface area yet so we can't use it
@@ -111,6 +110,129 @@ sapply(sym_chla, class)
 #convert any variables to correct classes as needed - see example here
 sym_chla <- sym_chla %>% mutate_at(c('ug_chla_cm'), as.numeric)
 
+#########
+
+#read in SEASONAL DATAFRAME & remove samples w/ no data
+sym_chla <- read.csv(here("Data", "Seasonal", "sym_chla_oculina_seasonal.csv"))
+meta <- read.csv(here("Data", "Seasonal", "oculina_seasonal_metadata.csv"))
+
+sym_chla <- sym_chla %>% 
+  left_join(meta, by = "full_ID")
+sym_chla <- sym_chla %>% filter(full_ID != "A12-1124") 
+
+#checks do see if data is still in sample set
+sym_chla %>% 
+  filter(full_ID == "A12-1124")
+#here A12 from Nov 24 has no surface area yet so we can't use it
+
+sym_chla <- sym_chla %>%
+  filter(full_ID != "A12-1124") %>%
+  mutate(timepoint = factor(timepoint.y, levels = c("Nov_23", "May_24", "Nov_24")))
+
+
+#reorder variables so the timepoints go in chronological order
+sym_chla$timepoint <- factor(sym_chla$timepoint, levels=c('Nov_23', 'May_24', 'Nov_24'))
+
+
+#making timepoints
+sym_chla <- sym_chla %>%
+  mutate(timepoint = case_when(
+    month == "November" & year == 2023 ~ "Nov_23",
+    month == "May" & year == 2024 ~ "May_24",
+    month == "November" & year == 2024 ~ "Nov_24"
+  ))
+str(sym_chla$month)
+
+###Seasonal Timepoint Chla cm^2 box plot
+chla_time_box <- ggplot(sym_chla, aes(x = timepoint, y = ug_chla_cm, fill = timepoint)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.8, width = 0.2) +
+  theme_classic(base_size = 22) +
+  theme(legend.position = "none") +
+  labs(x = "Timepoint", y = "ug chla per cm2") +
+  scale_fill_manual(values = c("navy", "pink", "cyan3"))
+
+chla_time_box
+
+##Ginormous 3 panel plot -- sym density, chla/cm2, chla/symbiont
+
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+
+# Ensure correct timepoint order
+sym_chla$timepoint <- factor(sym_chla$timepoint,
+                             levels = c("Nov_23", "May_24", "Nov_24"))
+
+# title font theme
+my_theme <- theme(
+  legend.position = "none",
+  plot.title = element_text(face = "bold", hjust = 0.5)
+)
+
+p1 <- ggplot(sym_chla, aes(x = timepoint, y = sym_cm2, fill = timepoint)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(color = "black", alpha = 1, size = 1.8, width = 0.2) +
+  scale_fill_manual(values = c("navy", "pink", "cyan3")) +
+  labs(
+    title = "Symbiont density",
+    x = "Timepoint",
+    y = expression(cells~cm^{-2}),
+    fill = "Timepoint"
+  ) +
+  theme_classic(base_size = 18) +
+  my_theme
+
+# Panel 2: Chlorophyll a per cm2
+p2 <- ggplot(sym_chla, aes(x = timepoint, y = ug_chla_cm, fill = timepoint)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(color = "black", alpha = 1, size = 1.8, width = 0.2) +
+  scale_fill_manual(values = c("navy", "pink", "cyan3")) +
+  labs(
+    title = expression(bold("Chl " * italic(a))),
+    y = expression(mu*g~cm^{-2}),
+    fill = "Timepoint"
+  ) +
+  theme_classic(base_size = 18) +
+  my_theme
+
+# Panel 3: Chlorophyll a per symbiont
+p3 <- ggplot(sym_chla, aes(x = timepoint, y = pg_chla_sym, fill = timepoint)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(color = "black", alpha = 1, size = 1.8, width = 0.2) +
+  scale_fill_manual(values = c("navy", "pink", "cyan3")) +
+  labs(
+    title = expression(bold("Chl " * italic(a) * " per symbiont")),
+    x = "Timepoint",
+    y = expression(pg~sym^{-1}),
+    fill = "Timepoint"
+  ) +
+  theme_classic(base_size = 18) +
+  my_theme
+
+# Combining panels
+three_panel <- p2 + p1 + p3
+#Call plot
+three_panel
+#save plot
+ggsave(three_panel, file = "three_panel.pdf", h=6, w=6) #change height and width and resave as needed
+
+###STATS FOR 3 PANEL
+#sym density
+sym_aov <- aov(sym_cm2 ~ timepoint, data = sym_chla)
+summary(sym_aov)
+
+TukeyHSD(sym_aov)
+#chla per cm2
+chla_aov <- aov(ug_chla_cm ~ timepoint, data = sym_chla)
+summary(chla_aov)
+
+TukeyHSD(chla_aov)
+#chl a per symbiont
+chla_sym_aov <- aov(pg_chla_sym ~ timepoint, data = sym_chla)
+summary(chla_sym_aov)
+
+TukeyHSD(chla_sym_aov)
 #info about variables - add notes that are helpful to you!
 #sa_colony = aposymbiotic/symbiotic original designation of the colony
 #timepoint = month/year combo for when data was taken
@@ -137,18 +259,16 @@ sym_chla <- sym_chla %>% mutate_at(c('ug_chla_cm'), as.numeric)
 #   identify_outliers(chla_sym)
 # chla_sym_out
 
-#reorder variables so that the timepoints go in chronological order
-sym_chla$timepoint <- factor(sym_chla$timepoint, levels=c('Nov_23', 'May_24', 'Nov_24'))
 
 ###PLOTS###
 #USING FOR 395
 #dot plot of chlorophyll a looking at all samples split and colored by apo_sym
 #also looking at the different time points
-chla_sa_point <- ggplot(sym_chla, aes(x = sample_ID, y=ug_chla_cm, color = sa_colony))+
+chla_sa_point <- ggplot(sym_chla, aes(x = sample_ID.x, y=ug_chla_cm, color = sa_colony.x))+
   geom_point(alpha=0.8, size = 3)+
   theme_classic(base_size = 22)+
   theme(axis.text.x = element_text(angle = 90)) +
-  facet_grid(sa_colony~timepoint, scales = "free")
+  facet_grid(sa_colony.x~timepoint, scales = "free")
 chla_sa_point
 
 #@Ella - here's how to save a plot - it will save in your working directory folder
@@ -156,7 +276,7 @@ chla_sa_point
 ggsave(chla_sa_point, file = "chla_sa_point.pdf", h=6, w=6) #change height and width and resave as needed
 
 #now look at it without apo & sym just seasonal
-chla_time_point <- ggplot(sym_chla, aes(x = sample_ID, y=ug_chla_cm, color = timepoint))+
+chla_time_point <- ggplot(sym_chla, aes(x = sample_ID.x, y=ug_chla_cm, color = timepoint))+
   geom_point(alpha=0.8, size= 3)+
   theme_classic(base_size = 22)+
   theme(axis.text.x = element_text(angle = 90)) +
@@ -214,25 +334,27 @@ sym_chla$timepoint <- factor(sym_chla$timepoint, levels=c('Nov_23', 'May_24', 'N
 
 #add missing data combinations where frags don't have data so lines break across gaps
 sym_chla_time <- sym_chla %>%
-  group_by(sample_ID) %>%
+  group_by(sample_ID.y) %>%
   complete(timepoint = time_levels) %>%
   ungroup()
 
 #chla over time for each colony
 #eeee I can't wait to see the rest of this data filled in it's going to be so cool!!!
 #this plot is a bit chaotic but I think important to show how individual colonies change over time
-chla_time_line <- ggplot(sym_chla_time, aes(x = timepoint, y = ug_chla_cm, group = sample_ID, color = sample_ID)) +
-  geom_line(na.rm = FALSE, linewidth = 0.7, alpha = 0.7) +
-  geom_point(data = sym_chla_time, size = 3) +
-  labs(x = "Timepoint", y = "ug chla per cm2", color = "Sample ID")+
+chla_time_line <- ggplot(sym_chla_time, aes(x = timepoint, y = ug_chla_cm, group = sample_ID.y)) +
+  geom_line(color = "black", linewidth = 0.7) +
+  geom_point(aes(fill = timepoint), size = 3, shape = 21, color = "black", stroke = 0.8) +  scale_color_manual(values = c("navy", "pink", "cyan3")) +
+  scale_fill_manual(values = c("navy", "pink", "cyan3")) +
+  labs(x = "Timepoint", y = "ug chla per cm2", color = "Sample ID") +
   theme_classic(base_size = 22) +
-  theme(axis.text.x = element_text(angle = 90),legend.position = "right")
+  theme(axis.text.x = element_text(angle = 90), legend.position = "right")
+
 chla_time_line
 #this will say its removing rows with values outside the scale range
 #that's just bc it's removing the rows without data so it's totally fine!!
 
 chla_time_line_sa <- chla_time_line +
-  facet_wrap(~sa_colony)
+  facet_wrap(~sa_colony.x)
 chla_time_line_sa
 
 ggsave("chla_time_line_colony_oculina_seasonal.pdf", chla_time_line, h = 10, w = 15)
@@ -240,7 +362,7 @@ ggsave("chla_time_line_colony_oculina_seasonal.pdf", chla_time_line, h = 10, w =
 ggsave("chla_time_line_colony_sa_oculina_seasonal.pdf", chla_time_line_sa, h = 10, w = 15)
 
 #####Symbiont Density #####
-sym <- read.csv(here("Data", "Physiology", "oculina_nov24_sym_density.csv"))
+sym <- read.csv(here("Data", "Nov_2024", "oculina_nov24_sym_density.csv"))
 
 sym <- sym %>% left_join(phys_meta, by = "sample_ID")
 
@@ -271,17 +393,18 @@ avg_DW <- read.csv(here("Data", "Average_Dry_Weight.csv"))
 
 #look to see if means of different groups are the same/different
 #chla_cm
-chla_as_summ <- sym_chla %>% group_by(sa_colony) %>% get_summary_stats(ug_chla_cm, type = "mean_sd")
+chla_as_summ <- sym_chla %>% group_by(sa_colony.x) %>% get_summary_stats(ug_chla_cm, type = "mean_sd")
 chla_as_summ #huge sd - probs no difference in stats
-chla_time_summ <- sym_chla %>% group_by(timepoint) %>% get_summary_stats(ug_chla_cm, type = "mean_sd")
+chla_time_summ <- sym_chla %>% group_by(timepoint.x) %>% get_summary_stats(ug_chla_cm, type = "mean_sd")
 chla_time_summ #looks like def a difference between may/the novs, maybe all 3
-chla_as_time_summ <- sym_chla %>% group_by(sa_colony, timepoint) %>% get_summary_stats(ug_chla_cm, type = "mean_sd")
+chla_as_time_summ <- sym_chla %>% group_by(sa_colony.x, timepoint.x) %>% get_summary_stats(ug_chla_cm, type = "mean_sd")
 chla_as_time_summ #yes differences here too but not sure if the interaction matters or if time just matters more
 #you can report these values in your slide along with stats (see below)
 
 #run ANOVA to look at differences - @Ella we will do better stats later that are more complex and fit the data better!
 #this is so you can report something for now for the surf :)
-chla_time_sa_aov <- aov(ug_chla_cm ~ sa_colony*timepoint, data=sym_chla)
+###SEASONAL STATS TEST
+chla_time_sa_aov <- aov(ug_chla_cm ~ sa_colony.x*timepoint.x, data=sym_chla)
 Anova(chla_time_sa_aov)
 summary(chla_time_sa_aov)
 #Ella report results from here to say what is significant and what is not!
