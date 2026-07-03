@@ -2,7 +2,7 @@
 ##### Coral Physiology Oculina Seasonal Project#####
 
 #Maya Powell & Jamie Long & Ella Hennessey
-#Last edited November 28th 2025
+#Last edited July 1st 2026
 
 #install.packages(c("performance", "here"))
 
@@ -23,14 +23,251 @@ library(performance)
 library(ggpubr)
 
 
-#read in metadata
-phys_meta <- read.csv(here("Data", "Nov_2024", "oculina_nov24_chla.csv"))
-
 ###Isotopes###
+
+# Function to calculate standard error (SE)
+se_fun <- function(x) {
+  n <- sum(!is.na(x))
+  if (n <= 1) return(NA_real_)
+  sd(x, na.rm = TRUE) / sqrt(n)
+}
+####HOST JITTER PLOTS####
+host <- read.csv(here("Data", "Nov_2024", "oculina_nov2024_isotopes_host.csv"))
+algae <- read.csv(here("Data", "Nov_2024", "oculina_nov2024_isotopes_algae.csv"))
+
+#reorder naming
+host$depth_sa <- factor(
+  host$depth_sa,
+  levels = c(
+    "Deep Aposymbiotic", "Shallow Aposymbiotic", "Shallow Symbiotic"))
+algae$depth_sa <- factor(
+  algae$depth_sa,
+  levels = c("Deep Aposymbiotic","Shallow Aposymbiotic","Shallow Symbiotic"))
+
+#summary table
+host_summary <- host %>%
+  group_by(depth_sa) %>%
+  summarise(
+    n = sum(!is.na(d13C_host)),
+    mean = mean(d13C_host, na.rm = TRUE),
+    se = se_fun(d13C_host),
+    .groups = "drop"
+  )
+
+# Assign colors
+depth_cols <- c(
+  "Deep Aposymbiotic" = "cyan3",
+  "Shallow Aposymbiotic" = "hotpink2",
+  "Shallow Symbiotic" = "navy")
+
+# jitter plot of host δ13C values
+# points represent individual coral fragments.
+# black points show the treatment mean, error bars represent ±1 standard error
+
+host_d13C_plot <- ggplot() +
+  # Plot individual isotope measurements
+  geom_jitter(
+    data = host,
+    aes(
+      x = depth_sa,y = d13C_host,color = depth_sa),width = 0.15, alpha = 0.8) +
+  # Add mean ± standard error
+  geom_errorbar(
+    data = host_summary,
+    aes(x = depth_sa,ymin = mean - se,ymax = mean + se),width = 0.2,linewidth = 0.6) +
+  
+  # Add the group mean point
+  geom_point(data = host_summary,aes(x = depth_sa,y = mean),size = 2) +
+  # colors
+  scale_color_manual(values = depth_cols) +
+  # formatting
+  theme_bw(base_size = 22) +
+  
+  theme(legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(angle = 30, hjust = 1)) +
+  # Label y-axis
+  labs(
+    y = expression(delta^{13}*C~("\u2030")))
+# call plot
+host_d13C_plot
+
+###HOST D15N PLOT###
+# summary table
+host_summary <- host %>%
+  group_by(depth_sa) %>%
+  summarise(
+    n = sum(!is.na(d15N_host)),
+    mean = mean(d15N_host, na.rm = TRUE),
+    se = se_fun(d15N_host),
+    .groups = "drop"
+  )
+
+# Assign colors
+depth_cols <- c(
+  "Deep Aposymbiotic" = "cyan3",
+  "Shallow Aposymbiotic" = "hotpink2",
+  "Shallow Symbiotic" = "navy")
+
+# jitter plot of host δ15N values
+# points represent individual coral fragments.
+# black points show the treatment mean, error bars represent ±1 standard error
+
+host_d15N_plot <- ggplot() +
+  
+  # Plot individual isotope measurements
+  geom_jitter(data = host,aes(x = depth_sa,y = d15N_host,color = depth_sa),
+              width = 0.15,alpha = 0.8) +
+  # Add mean ± standard error
+  geom_errorbar(
+    data = host_summary,
+    aes(x = depth_sa, ymin = mean - se, ymax = mean + se),width = 0.2,linewidth = 0.6) +
+  
+  # Add the group mean point
+  geom_point(
+    data = host_summary,
+    aes(x = depth_sa,y = mean),size = 2) +
+  
+  # colors
+  scale_color_manual(values = depth_cols) +
+  
+  # formatting
+  theme_bw(base_size = 22) +
+  
+  theme(
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(angle = 30, hjust = 1)) +
+  
+  # Label y-axis
+  labs(
+    y = expression(delta^{15}*N~("\u2030")))
+
+# call plot
+host_d15N_plot
+
+#### ALGAE JITTER PLOTS ####
+### D13C PLOT ###
+# summary table
+algae_summary <- algae %>%
+  group_by(depth_sa) %>%
+  summarise(
+    n = sum(!is.na(d13C_algae)),
+    mean = mean(d13C_algae, na.rm = TRUE),
+    se = se_fun(d13C_algae),
+    .groups = "drop"
+  )
+
+# Assign colors CAN BE CHANGED
+depth_cols <- c(
+  "Deep Aposymbiotic" = "cyan3",
+  "Shallow Aposymbiotic" = "hotpink2",
+  "Shallow Symbiotic" = "navy")
+
+# jitter plot of algae δ13C values
+# points represent individual coral fragments.
+# black points show the treatment mean, error bars represent ±1 standard error
+
+algae_d13C_plot <- ggplot() +
+  
+  # Plot individual isotope measurements
+  geom_jitter(
+    data = algae,
+    aes(x = depth_sa,y = d13C_algae,color = depth_sa),
+    width = 0.15,alpha = 0.8) +
+  
+  # Add mean ± standard error
+  geom_errorbar(
+    data = algae_summary,
+    aes(x = depth_sa,ymin = mean - se,ymax = mean + se),
+    width = 0.2,linewidth = 0.6) +
+  
+  # Add the group mean point
+  geom_point(
+    data = algae_summary,
+    aes(x = depth_sa,y = mean),size = 2) +
+  
+  # colors
+  scale_color_manual(values = depth_cols) +
+  
+  # formatting
+  theme_bw(base_size = 22) +
+  
+  theme(
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(angle = 30, hjust = 1)) +
+  
+  # Label y-axis
+  labs(
+    y = expression(delta^{13}*C~("\u2030")))
+
+# call plot
+algae_d13C_plot
+
+#ALGAE D15N PLOT
+# summary table
+algae_summary <- algae %>%
+  group_by(depth_sa) %>%
+  summarise(
+    n = sum(!is.na(d15N_algae)),
+    mean = mean(d15N_algae, na.rm = TRUE),
+    se = se_fun(d15N_algae),
+    .groups = "drop"
+  )
+
+# Assign colors
+depth_cols <- c(
+  "Deep Aposymbiotic" = "cyan3",
+  "Shallow Aposymbiotic" = "hotpink2",
+  "Shallow Symbiotic" = "navy")
+
+# jitter plot of algae δ15N values
+# points represent individual coral fragments.
+# black points show the treatment mean, error bars represent ±1 standard error
+
+algae_d15N_plot <- ggplot() +
+  
+  # Plot individual isotope measurements
+  geom_jitter(
+    data = algae,aes(x = depth_sa,y = d15N_algae,color = depth_sa),
+    width = 0.15,alpha = 0.8) +
+  
+  # Add mean ± standard error
+  geom_errorbar(
+    data = algae_summary,
+    aes(x = depth_sa,ymin = mean - se,ymax = mean + se),
+    width = 0.2,linewidth = 0.6) +
+  
+  # Add the group mean point
+  geom_point(
+    data = algae_summary,
+    aes(x = depth_sa, y = mean),size = 2) +
+  
+  # colors
+  scale_color_manual(values = depth_cols) +
+  
+  # formatting
+  theme_bw(base_size = 22) +
+  
+  theme(
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(angle = 30, hjust = 1)) +
+  
+  # Label y-axis
+  labs(
+    y = expression(delta^{15}*N~("\u2030")))
+
+# call plot
+algae_d15N_plot
+
 
 
 
 #####Ash Free Dry Weight#####
+
+#read in metadata
+phys_meta <- read.csv(here("Data", "Nov_2024", "oculina_nov24_chla.csv"))
 #load data
 DW <- read.csv(here("Data", "Physiology", "Dry_Weight_Oki2025.csv"))
 
