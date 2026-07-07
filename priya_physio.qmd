@@ -1,0 +1,66 @@
+---
+title: "physio_Priya"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(dplyr)
+library(randomForest)
+library(rfPermute)
+library(vegan)
+library(ggplot2)
+
+
+sym_chla <- read.csv("Data/Nov_2024/oculina_nov24_physio.csv")
+```
+
+You can add options to executable code like this
+
+re-creating Ella's scatter plot
+
+```{r}
+sym_chla_scatter <- ggplot(sym_chla, aes(x = sym_cm2, y = ug_chla_cm, fill = depth_sa)) +
+  geom_point(color='black', shape = 21) +
+  scale_fill_manual(values = c("white","lightyellow","brown"))+
+
+  geom_smooth(aes(x = sym_cm2, y = ug_chla_cm, group = 1),
+              method = "lm", se = TRUE, color = "black") +
+  labs(x = "Symbiont density (cells per cm2)", 
+       y = "Chlorophyll a (ug per cm2)", 
+       fill = "Fragment symbiotic state")
+sym_chla_scatter
+
+
+#ug_chla_cm = micrograms of chlorophyll a per cm2 of surface area
+#sym_cm2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+removing outliers from above scatter plot, including \[r-val?\]
+
+```{r}
+
+sym_chla_no_out <- sym_chla |>
+  filter(sample_ID != "S26-S" & sample_ID != "S15-S")
+
+sym_chla_scatter_no_out <- ggplot(sym_chla_no_out, aes(x = sym_cm2, y = ug_chla_cm, fill = depth_sa)) +
+  geom_point(color='black', shape = 21) +
+  scale_fill_manual(values = c("white","lightyellow","brown"))+
+
+  geom_smooth(aes(x = sym_cm2, y = ug_chla_cm, group = 1),
+              method = "lm", se = TRUE, color = "black") +
+  labs(x = "Symbiont density (cells per cm2)", 
+       y = "Chlorophyll a (ug per cm2)", 
+       fill = "Fragment symbiotic state")
+sym_chla_scatter_no_out
+```

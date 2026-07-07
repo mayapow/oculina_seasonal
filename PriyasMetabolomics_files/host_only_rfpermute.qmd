@@ -70,9 +70,101 @@ write.csv(significant_features_host, file = "sig_feat_phenotype_host_rfpermute.c
 ```
 
 ```{r}
-sig_feat_phen_host <- read.csv("sig_feat_phenotype_rfpermute.csv")
+sig_feat_phen_host <- read.csv("sig_feat_phenotype_host_rfpermute.csv")
+```
+
+```{r}
+sig_rows_host <- sig_feat_phen_host$Feature
+
+num_df_sig_phen_host <- data.matrix(num_df_final |>
+  select(all_of(sig_rows_host)))
+
+log2FC_host <- sapply(sig_rows_host, function(met){
+  
+  B_vals_host  <- (num_df_sig_phen_host[ocu_final$bleaching == "B", met])
+  NB_vals_host <- (num_df_sig_phen_host[ocu_final$bleaching == "NB", met])
+
+  mean_B_host  <- mean(B_vals_host,  na.rm = TRUE)
+  mean_NB_host <- mean(NB_vals_host, na.rm = TRUE)
+
+  log2(mean_B_host / mean_NB_host)
+})
+
+log2FC_df_host <- data.frame(
+  metabolite = sig_feat_phen_host,
+  log2FC = log2FC_host
+)
+```
+
+```{r, fig.height = 10, fig.width = 10}
+library(ggpattern)
+
+sig_feat_phen_joined_host <- log2FC_df_host |>
+  inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
+    select(metabolite.Feature, 
+         `metabolite.MeanDecreaseAccuracy`, 
+         compound_class, 
+         log2FC,
+         npc_number_superclass) |>
+     mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic"))
+
+sig_feat_phen_joined_host <- sig_feat_phen_joined_host |>
+  arrange(desc(metabolite.MeanDecreaseAccuracy))
+
+ggplot(sig_feat_phen_joined_host, 
+       aes(x = reorder(metabolite.Feature, `metabolite.MeanDecreaseAccuracy`), 
+           y = `metabolite.MeanDecreaseAccuracy`,
+           fill = compound_class,
+           pattern = Sign
+           )) +
+  geom_col_pattern(
+  pattern_density = 0.2,
+  pattern_spacing = 0.03
+  ) +
+  
+  scale_fill_manual(values = c("#FBE183FF", "#F4C40FFF", "#FE9B00FF", "#D8443CFF", "#9B3441FF", "#DE597CFF", "#E87B89FF", "#E6A2A6FF", "#AA7AA1FF", "#9F5691FF", "#633372FF", "#1F6E9CFF", "#2B9B81FF", "#92C051FF")
+) +
+  
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Importance after rfPermute for Phenotype Classification with Host-only Metabolites",
+       x = "Feature",
+       y = "Mean Decrease in Accuracy") +
+  theme_minimal()
+
+```
+
+same thing but with chlorophyll instead of phenotype
+
+```{r}
+Oculina_host_wide_chlor <- Oculina_host_wide |>
+  left_join(oculina_final |>
+              select(full_id, ug_chla_cm))
+```
+
+```{r}
+num_df_host_chlor <- Oculina_host_wide_chlor[,-c(1, 2)]
 ```
 
 ```{r}
 
+
+rfp_chlor_host <- rfPermute(ug_chla_cm ~., data = num_df_host_chlor, na.action = na.omit, ntree = 500, num.rep = 1000)
+
+rfp_chlor_host
+
+rfp_table_host_chlor <- as.data.frame(importance(rfp_chlor_host))  # Convert to a data frame
+rfp_table_host_chlor <- tibble::rownames_to_column(rfp_table_host_chlor, var = "Feature")
+print(rfp_table_host_chlor)  # Display in console
+
+
+```
+
+```{r}
+significant_features_host_chlor <- rfp_table_host_chlor %>% filter(IncNodePurity.pval < 0.05)  # Adjust p-value threshold as needed
+
+print(significant_features_host_chlor)
+```
+
+```{r}
+write.csv(significant_features_host_chlor, file = "sig_feat_chlorophyll_host_rfpermute.csv")
 ```

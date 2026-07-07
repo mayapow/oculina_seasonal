@@ -13,8 +13,11 @@ library(ggplot2)
 ```
 
 ```{r}
-oculina <- read.csv("Data/Metabolomics/oculina_superset_final.csv")
-ocu_meta <- read.csv("Data/Metabolomics/oculina_metabolomics_metadata.csv")
+oculina <- read.csv("../Data/Metabolomics/oculina_superset_final.csv")
+
+ocu_meta <- read.csv("../Data/Metabolomics/oculina_metabolomics_metadata.csv")
+
+#"C:\Users\priya\OneDrive\Documents\oculina_seasonal"
 ```
 
 ```{r}
@@ -123,6 +126,94 @@ permanova_fin_no_out <- adonis2(braycurtis_fin_no_out ~ bleaching, data = oculin
 
 # Display the results
 print(permanova_fin_no_out)
+```
+
+PCoA with outliers on oculina_final with three categories: depth_sa
+
+```{r}
+
+
+depthsa_fin <- oculina_final$depth_sa
+meta_id_fin_depthsa <- oculina_final$id
+
+
+braycurtis_fin_depthsa <- vegdist(num_df_final, method = "bray")
+pcoa_result_fin_depthsa <- cmdscale(braycurtis_fin_depthsa, eig = TRUE)
+eig_vals_fin_depthsa <- pcoa_result_fin_depthsa$eig
+variance_explained_fin_depthsa <- eig_vals_fin_depthsa/sum(eig_vals_fin_depthsa) * 100
+
+pcoa_df_ocu_fin_depthsa <- data.frame(
+  PC1 = pcoa_result_fin_depthsa$points[, 1],
+  PC2 = pcoa_result_fin_depthsa$points[, 2],
+  depth_sa = depthsa_fin,
+  ID = meta_id_fin_depthsa
+)
+
+
+pcoa_oculina_fin_depthsa <-ggplot(data = pcoa_df_ocu_fin_depthsa, aes(x = PC1, y = PC2, color = depth_sa)) + 
+  geom_point() +
+ 
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold")) +
+  
+  theme_classic(base_size = 8) +
+  theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
+        ) +
+
+  labs(
+       x = paste("PC1 ", sprintf("%.1f%%", variance_explained_fin_depthsa[1])),
+       y = paste("PC2 ", sprintf("%.1f%%", variance_explained_fin_depthsa[2])),
+       ) +
+  theme(plot.margin=ggplot2::margin(t=8,b=8,r=15,l=20,unit="pt"))
+
+
+
+   
+pcoa_oculina_fin_depthsa
+```
+
+same as above, without outliers:
+
+```{r}
+
+num_df_fin_no_out <- num_df_final[-c(32, 34, 57, 61),]
+depthsa_fin_no_out <- oculina_final[-c(32, 34, 57, 61),]$depth_sa
+meta_id_fin_depthsa_no_out <- oculina_final[-c(32, 34, 57, 61),]$id
+
+
+
+
+braycurtis_fin_depthsa_no_out <- vegdist(num_df_fin_no_out, method = "bray")
+pcoa_result_fin_depthsa_no_out <- cmdscale(braycurtis_fin_depthsa_no_out, eig = TRUE)
+eig_vals_fin_depthsa_no_out <- pcoa_result_fin_depthsa_no_out$eig
+variance_explained_fin_depthsa_no_out <- eig_vals_fin_depthsa_no_out/sum(eig_vals_fin_depthsa_no_out) * 100
+
+pcoa_df_ocu_fin_depthsa_no_out <- data.frame(
+  PC1 = pcoa_result_fin_depthsa_no_out$points[, 1],
+  PC2 = pcoa_result_fin_depthsa_no_out$points[, 2],
+  depth_sa = depthsa_fin_no_out,
+  ID = meta_id_fin_depthsa_no_out
+)
+
+
+pcoa_oculina_fin_depthsa_no_out <-ggplot(data = pcoa_df_ocu_fin_depthsa_no_out, aes(x = PC1, y = PC2, color = depth_sa)) + 
+  geom_point() +
+ 
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold")) +
+  
+  theme_classic(base_size = 8) +
+  theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
+        ) +
+
+  labs(
+       x = paste("PC1 ", sprintf("%.1f%%", variance_explained_fin_depthsa_no_out[1])),
+       y = paste("PC2 ", sprintf("%.1f%%", variance_explained_fin_depthsa_no_out[2])),
+       ) +
+  theme(plot.margin=ggplot2::margin(t=8,b=8,r=15,l=20,unit="pt"))
+
+
+
+   
+pcoa_oculina_fin_depthsa_no_out
 ```
 
 random forest model to predict bleaching phenotype using all metabolites **on 'oculina'**:

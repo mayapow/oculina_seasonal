@@ -1,0 +1,91 @@
+---
+title: "Priya Isotope"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(vegan)
+```
+
+You can add options to executable code like this
+
+```{r}
+metadata_view <- read.csv("Data/Nov_2024/oculina_nov2024_isotopes.csv")
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+Ella's preliminary boxplots:
+
+```{r}
+library(SIBER)
+library(tidyverse)
+#library(rjags)
+library(ggplot2)
+library(here)
+library(lubridate)
+#help(SIBER)
+
+#nov 2024 data
+
+iso_nov24<-read.csv(here("Data/Nov_2024/oculina_nov2024_isotopes.csv"))
+iso_nov24 <- iso_nov24 %>%
+  filter(sample_id !="A5-A-1124-Algae", sample_id !="S11-S-new-1124-Algae") %>% #remove sample IDs that are not paired algae & host
+  filter(algae_host != "Filter") #remove filter samples for now
+```
+
+```{r}
+iso_nov24_host <- read.csv(here("Data/Nov_2024/oculina_nov2024_isotopes_host.csv")) 
+iso_nov24_host <- iso_nov24_host %>%
+  select(-sample_id,-algae_host,-weight_mg,-total_C_ug,-pct_C,-pct_N,-total_N_ug)
+iso_nov24_algae<-read.csv(here("Data/Nov_2024/oculina_nov2024_isotopes_algae.csv"))
+iso_nov24_algae <- iso_nov24_algae %>%
+  select(-sample_id,-algae_host,-weight_mg,-total_C_ug,-pct_C,-pct_N,-total_N_ug)
+iso_nov24_holo <- iso_nov24_algae %>%
+  left_join(iso_nov24_host) %>%
+  mutate(d15N_holo = d15N_host - d15N_algae,
+         d13C_holo = d13C_host - d13C_algae)
+
+```
+
+```{r}
+iso_d13C_depth_sa <- ggplot(iso_nov24, aes(x = algae_host, y=d13C, fill = algae_host))+
+  geom_boxplot()+
+  geom_jitter(alpha=0.8, width=0.2)+
+  theme_classic(base_size = 22)+
+  labs(x = "Timepoint", y = expression(paste(delta^{13}, "C (‰, V-PDB)")))+
+  theme(legend.position = "none") +
+  facet_wrap(~depth_sa)
+iso_d13C_depth_sa
+```
+
+```{r}
+iso_d15N_depth_sa <- ggplot(iso_nov24, aes(x = algae_host, y=d15N, fill = algae_host))+
+  geom_boxplot()+
+  geom_jitter(alpha=0.8, width=0.2)+
+  theme_classic(base_size = 22)+
+  labs(x = "Timepoint", y = expression(paste(delta^{15}, "N (‰, air)")))+
+  theme(legend.position = "none")+
+  facet_wrap(~depth_sa)
+iso_d15N_depth_sa
+```
+
+merging host samples with metabolomic matrix
+
+```{r}
+
+metabolome_isotope <- oculina_final |>
+  left_join(iso_nov24_host)
+```
