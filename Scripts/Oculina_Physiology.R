@@ -276,6 +276,91 @@ ggsave(
   dpi = 600
 )
 
+# Host isotope scatterplot
+# δ13C on x-axis
+# δ15N on y-axis
+
+host_CN_plot <- ggplot(
+  host,
+  aes(
+    x = d13C_host,
+    y = d15N_host,
+    color = depth_sa
+  )
+) +
+  geom_point(
+    size = 3,
+    alpha = 0.8
+  ) +
+  
+  scale_color_manual(values = depth_cols) +
+  
+  theme_bw(base_size = 22) +
+  
+  theme(
+    legend.position = "right",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  
+  labs(
+    title = "Host",
+    x = expression(delta^{13}*C~("\u2030")),
+    y = expression(delta^{15}*N~("\u2030")),
+    color = "Treatment"
+  )
+
+host_CN_plot
+ggsave(
+  filename = here("Output", "Nov_2024", "host_CN_scatterplot.pdf"),
+  plot = host_CN_plot,
+  width = 6,
+  height = 6,
+  dpi = 600
+)
+
+# Algae isotope scatterplot
+# δ13C on x-axis
+# δ15N on y-axis
+
+algae_CN_plot <- ggplot(
+  algae,
+  aes(
+    x = d13C_algae,
+    y = d15N_algae,
+    color = depth_sa
+  )
+) +
+  geom_point(
+    size = 3,
+    alpha = 0.8
+  ) +
+  
+  scale_color_manual(values = depth_cols) +
+  
+  theme_bw(base_size = 22) +
+  
+  theme(
+    legend.position = "right",
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  
+  labs(
+    title = "Algae",
+    x = expression(delta^{13}*C~("\u2030")),
+    y = expression(delta^{15}*N~("\u2030")),
+    color = "Treatment"
+  )
+
+algae_CN_plot
+ggsave(
+  filename = here("Output", "Nov_2024", "algae_CN_scatterplot.pdf"),
+  plot = algae_CN_plot,
+  width = 6,
+  height = 6,
+  dpi = 600
+)
 #####Ash Free Dry Weight#####
 
 #read in metadata
