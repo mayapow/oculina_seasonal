@@ -31,11 +31,11 @@ se_fun <- function(x) {
   if (n <= 1) return(NA_real_)
   sd(x, na.rm = TRUE) / sqrt(n)
 }
-####HOST JITTER PLOTS####
+# read in data
 host <- read.csv(here("Data", "Nov_2024", "oculina_nov2024_isotopes_host.csv"))
 algae <- read.csv(here("Data", "Nov_2024", "oculina_nov2024_isotopes_algae.csv"))
 
-#reorder naming
+# reorder naming
 host$depth_sa <- factor(
   host$depth_sa,
   levels = c(
@@ -44,7 +44,16 @@ algae$depth_sa <- factor(
   algae$depth_sa,
   levels = c("Deep Aposymbiotic","Shallow Aposymbiotic","Shallow Symbiotic"))
 
-#summary table
+# Assign colors
+
+depth_cols <- c(
+  "Deep Aposymbiotic" = "cyan3",
+  "Shallow Aposymbiotic" = "hotpink2",
+  "Shallow Symbiotic" = "navy"
+)
+
+# Host d13C
+
 host_summary <- host %>%
   group_by(depth_sa) %>%
   summarise(
@@ -54,100 +63,44 @@ host_summary <- host %>%
     .groups = "drop"
   )
 
-# Assign colors
-depth_cols <- c(
-  "Deep Aposymbiotic" = "cyan3",
-  "Shallow Aposymbiotic" = "hotpink2",
-  "Shallow Symbiotic" = "navy")
-
-# jitter plot of host δ13C values
-# points represent individual coral fragments.
-# black points show the treatment mean, error bars represent ±1 standard error
-
 host_d13C_plot <- ggplot() +
-  # Plot individual isotope measurements
   geom_jitter(
     data = host,
-    aes(
-      x = depth_sa,y = d13C_host,color = depth_sa),width = 0.15, alpha = 0.8) +
-  # Add mean ± standard error
+    aes(x = depth_sa, y = d13C_host, color = depth_sa),
+    width = 0.35,
+    alpha = 0.65,
+    size = 2.5
+  ) +
   geom_errorbar(
     data = host_summary,
-    aes(x = depth_sa,ymin = mean - se,ymax = mean + se),width = 0.2,linewidth = 0.6) +
-  
-  # Add the group mean point
-  geom_point(data = host_summary,aes(x = depth_sa,y = mean),size = 2) +
-  # colors
-  scale_color_manual(values = depth_cols) +
-  # formatting
-  theme_bw(base_size = 22) +
-  
-  theme(legend.position = "none",
-    axis.title.x = element_blank(),
-    axis.text.x = element_text(angle = 30, hjust = 1)) +
-  # Label y-axis
-  labs(
-    y = expression(delta^{13}*C~("\u2030")))
-# call plot
-host_d13C_plot
-
-###HOST D15N PLOT###
-# summary table
-host_summary <- host %>%
-  group_by(depth_sa) %>%
-  summarise(
-    n = sum(!is.na(d15N_host)),
-    mean = mean(d15N_host, na.rm = TRUE),
-    se = se_fun(d15N_host),
-    .groups = "drop"
-  )
-
-# Assign colors
-depth_cols <- c(
-  "Deep Aposymbiotic" = "cyan3",
-  "Shallow Aposymbiotic" = "hotpink2",
-  "Shallow Symbiotic" = "navy")
-
-# jitter plot of host δ15N values
-# points represent individual coral fragments.
-# black points show the treatment mean, error bars represent ±1 standard error
-
-host_d15N_plot <- ggplot() +
-  
-  # Plot individual isotope measurements
-  geom_jitter(data = host,aes(x = depth_sa,y = d15N_host,color = depth_sa),
-              width = 0.15,alpha = 0.8) +
-  # Add mean ± standard error
-  geom_errorbar(
-    data = host_summary,
-    aes(x = depth_sa, ymin = mean - se, ymax = mean + se),width = 0.2,linewidth = 0.6) +
-  
-  # Add the group mean point
+    aes(x = depth_sa, ymin = mean - se, ymax = mean + se),
+    width = 0.18,
+    linewidth = 1
+  ) +
   geom_point(
     data = host_summary,
-    aes(x = depth_sa,y = mean),size = 2) +
-  
-  # colors
+    aes(x = depth_sa, y = mean),
+    size = 4,
+    color = "black"
+  ) +
   scale_color_manual(values = depth_cols) +
-  
-  # formatting
+  scale_x_discrete(labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")) +
+  coord_cartesian(ylim = c(-25, -10)) +
   theme_bw(base_size = 22) +
-  
   theme(
     legend.position = "none",
     axis.title.x = element_blank(),
-    axis.text.x = element_text(angle = 30, hjust = 1)) +
-  
-  # Label y-axis
-  labs(
-    y = expression(delta^{15}*N~("\u2030")))
+    axis.text.x = element_text(angle = 35, hjust = 1, size = 14),
+    axis.text.y = element_text(size = 16),
+    axis.title.y = element_text(size = 22),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    plot.margin = margin(10, 15, 10, 15)
+  ) +
+  labs(y = expression(delta^{13}*C~("\u2030")))
 
-# call plot
-host_d15N_plot
+# Algae d13C
 
-#### ALGAE JITTER PLOTS ####
-### D13C PLOT ###
-# summary table
 algae_summary <- algae %>%
   group_by(depth_sa) %>%
   summarise(
@@ -157,55 +110,91 @@ algae_summary <- algae %>%
     .groups = "drop"
   )
 
-# Assign colors CAN BE CHANGED
-depth_cols <- c(
-  "Deep Aposymbiotic" = "cyan3",
-  "Shallow Aposymbiotic" = "hotpink2",
-  "Shallow Symbiotic" = "navy")
-
-# jitter plot of algae δ13C values
-# points represent individual coral fragments.
-# black points show the treatment mean, error bars represent ±1 standard error
-
 algae_d13C_plot <- ggplot() +
-  
-  # Plot individual isotope measurements
   geom_jitter(
     data = algae,
-    aes(x = depth_sa,y = d13C_algae,color = depth_sa),
-    width = 0.15,alpha = 0.8) +
-  
-  # Add mean ± standard error
+    aes(x = depth_sa, y = d13C_algae, color = depth_sa),
+    width = 0.35,
+    alpha = 0.65,
+    size = 2.5
+  ) +
   geom_errorbar(
     data = algae_summary,
-    aes(x = depth_sa,ymin = mean - se,ymax = mean + se),
-    width = 0.2,linewidth = 0.6) +
-  
-  # Add the group mean point
+    aes(x = depth_sa, ymin = mean - se, ymax = mean + se),
+    width = 0.18,
+    linewidth = 1
+  ) +
   geom_point(
     data = algae_summary,
-    aes(x = depth_sa,y = mean),size = 2) +
-  
-  # colors
+    aes(x = depth_sa, y = mean),
+    size = 4,
+    color = "black"
+  ) +
   scale_color_manual(values = depth_cols) +
-  
-  # formatting
+  scale_x_discrete(labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")) +
+  coord_cartesian(ylim = c(-25, -10)) +
   theme_bw(base_size = 22) +
-  
   theme(
     legend.position = "none",
     axis.title.x = element_blank(),
-    axis.text.x = element_text(angle = 30, hjust = 1)) +
-  
-  # Label y-axis
-  labs(
-    y = expression(delta^{13}*C~("\u2030")))
+    axis.text.x = element_text(angle = 35, hjust = 1, size = 14),
+    axis.text.y = element_text(size = 16),
+    axis.title.y = element_text(size = 22),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    plot.margin = margin(10, 15, 10, 15)
+  ) +
+  labs(y = expression(delta^{13}*C~("\u2030")))
 
-# call plot
-algae_d13C_plot
+# Host d15N
 
-#ALGAE D15N PLOT
-# summary table
+host_summary <- host %>%
+  group_by(depth_sa) %>%
+  summarise(
+    n = sum(!is.na(d15N_host)),
+    mean = mean(d15N_host, na.rm = TRUE),
+    se = se_fun(d15N_host),
+    .groups = "drop"
+  )
+
+host_d15N_plot <- ggplot() +
+  geom_jitter(
+    data = host,
+    aes(x = depth_sa, y = d15N_host, color = depth_sa),
+    width = 0.35,
+    alpha = 0.65,
+    size = 2.5
+  ) +
+  geom_errorbar(
+    data = host_summary,
+    aes(x = depth_sa, ymin = mean - se, ymax = mean + se),
+    width = 0.18,
+    linewidth = 1
+  ) +
+  geom_point(
+    data = host_summary,
+    aes(x = depth_sa, y = mean),
+    size = 4,
+    color = "black"
+  ) +
+  scale_color_manual(values = depth_cols) +
+  scale_x_discrete(labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")) +
+  coord_cartesian(ylim = c(0, 10.5)) +
+  theme_bw(base_size = 22) +
+  theme(
+    legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(angle = 35, hjust = 1, size = 14),
+    axis.text.y = element_text(size = 16),
+    axis.title.y = element_text(size = 22),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    plot.margin = margin(10, 15, 10, 15)
+  ) +
+  labs(y = expression(delta^{15}*N~("\u2030")))
+
+# Algae d15N
+
 algae_summary <- algae %>%
   group_by(depth_sa) %>%
   summarise(
@@ -215,54 +204,77 @@ algae_summary <- algae %>%
     .groups = "drop"
   )
 
-# Assign colors
-depth_cols <- c(
-  "Deep Aposymbiotic" = "cyan3",
-  "Shallow Aposymbiotic" = "hotpink2",
-  "Shallow Symbiotic" = "navy")
-
-# jitter plot of algae δ15N values
-# points represent individual coral fragments.
-# black points show the treatment mean, error bars represent ±1 standard error
-
 algae_d15N_plot <- ggplot() +
-  
-  # Plot individual isotope measurements
   geom_jitter(
-    data = algae,aes(x = depth_sa,y = d15N_algae,color = depth_sa),
-    width = 0.15,alpha = 0.8) +
-  
-  # Add mean ± standard error
+    data = algae,
+    aes(x = depth_sa, y = d15N_algae, color = depth_sa),
+    width = 0.35,
+    alpha = 0.65,
+    size = 2.5
+  ) +
   geom_errorbar(
     data = algae_summary,
-    aes(x = depth_sa,ymin = mean - se,ymax = mean + se),
-    width = 0.2,linewidth = 0.6) +
-  
-  # Add the group mean point
+    aes(x = depth_sa, ymin = mean - se, ymax = mean + se),
+    width = 0.18,
+    linewidth = 1
+  ) +
   geom_point(
     data = algae_summary,
-    aes(x = depth_sa, y = mean),size = 2) +
-  
-  # colors
+    aes(x = depth_sa, y = mean),
+    size = 4,
+    color = "black"
+  ) +
   scale_color_manual(values = depth_cols) +
-  
-  # formatting
+  scale_x_discrete(labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")) +
+  coord_cartesian(ylim = c(0, 10.5)) +
   theme_bw(base_size = 22) +
-  
   theme(
     legend.position = "none",
     axis.title.x = element_blank(),
-    axis.text.x = element_text(angle = 30, hjust = 1)) +
-  
-  # Label y-axis
-  labs(
-    y = expression(delta^{15}*N~("\u2030")))
+    axis.text.x = element_text(angle = 35, hjust = 1, size = 14),
+    axis.text.y = element_text(size = 16),
+    axis.title.y = element_text(size = 22),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    plot.margin = margin(10, 15, 10, 15)
+  ) +
+  labs(y = expression(delta^{15}*N~("\u2030")))
 
-# call plot
-algae_d15N_plot
+# Combine into one four-panel
 
+library(grid)
 
+# Arrange plots
+iso_plots <- ggarrange(
+  host_d13C_plot,
+  algae_d13C_plot,
+  host_d15N_plot,
+  algae_d15N_plot,
+  nrow = 2,
+  ncol = 2,
+  labels = c("A", "B", "C", "D")
+)
 
+# Add host/algae titles
+final_plot <- annotate_figure(
+  iso_plots,
+  top = text_grob(
+    "Host                                  Algae",
+    face = "bold",
+    size = 18
+  )
+)
+
+final_plot
+
+# Save larger so points and labels are more visible
+ggsave(
+  here("Output", "Nov_2024", "isotope_four_panel_plot.pdf"),
+  iso_plots,
+  width = 18,
+  height = 12,
+  dpi = 600
+)
 
 #####Ash Free Dry Weight#####
 
