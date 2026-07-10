@@ -168,3 +168,36 @@ print(significant_features_host_chlor)
 ```{r}
 write.csv(significant_features_host_chlor, file = "sig_feat_chlorophyll_host_rfpermute.csv")
 ```
+
+```{r}
+significant_features_host_chlor <- read.csv("sig_feat_chlorophyll_host_rfpermute.csv")
+
+
+```
+
+```{r}
+sig_rows_host_chlor <- significant_features_host_chlor$Feature
+
+num_df_sig_phen_host_chlor <- data.matrix(num_df_host_chlor |>
+  select(all_of(sig_rows_host_chlor)))
+
+log2FC_host_chlor <- sapply(sig_rows_host_chlor, function(met){
+  
+  B_vals_host_chlor  <- (num_df_sig_phen_host_chlor[ocu_final$bleaching == "B", met])
+  NB_vals_host_chlor <- (num_df_sig_phen_host_chlor[ocu_final$bleaching == "NB", met])
+
+  mean_B_host_chlor  <- mean(B_vals_host_chlor,  na.rm = TRUE)
+  mean_NB_hos_chlort <- mean(NB_vals_host_chlor, na.rm = TRUE)
+
+  log2(mean_B_host_chlor / mean_NB_host_chlor)
+})
+
+log2FC_df_host_chlor <- data.frame(
+  metabolite = sig_feat_phen_host_chlor,
+  log2FC = log2FC_host_chlor
+)
+```
+
+```{r}
+
+```
