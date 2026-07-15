@@ -17,6 +17,8 @@ library(readxl)
 library(ggplot2)
 library(dplyr)
 library(vegan)
+library(stringr)
+library(tidyr)
 ```
 
 You can add options to executable code like this
@@ -86,5 +88,29 @@ merging host samples with metabolomic matrix
 
 ```{r}
 
+
 iso_sum_diff <- read.csv("Data/Nov_2024/priya_sum_diff_ocu_nov24_isotopes.csv")
+
+iso_sum_diff <- iso_sum_diff |>
+  mutate(sample_id = str_remove(sample_id, "-1124-Algae"))
+
+oculina_mod <- oculina_final[-c(40:44),] |>
+  mutate(sample_id = str_remove(full_id, "-1124"))
+
+oculina_mod <- oculina_mod[, -c(4:11, 13:25, 29:39)] |>
+  mutate(sample_id = str_remove(sample_id, "_1124"))
+
+
+```
+
+```{r}
+
+oculina_mod <- oculina_mod |>
+  mutate(sample_id = replace(sample_id, sample_id == "A13-A", "A13-A-old"), 
+         sample_id = replace(sample_id, sample_id == "A13-S", "A13-S-old"),
+         sample_id = replace(sample_id, sample_id == "A14-A", "A13-A-new"),
+         sample_id = replace(sample_id, sample_id == "A14-S", "A14-S-old"))
+
+iso_ocu_merge <- oculina_mod |>
+  left_join(iso_sum_diff, by = "sample_id")
 ```
