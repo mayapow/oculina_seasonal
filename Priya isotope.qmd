@@ -117,4 +117,22 @@ iso_sum_diff <- iso_sum_diff |>
 
 iso_ocu_merge <- oculina_mod |>
   left_join(iso_sum_diff, by = "sample_id")
+
+iso_ocu_merge <- iso_ocu_merge |>
+  filter(!is.na(diff_13C))
+```
+
+PERMANOVA for N15 and C13
+
+```{r}
+
+braycurtis_iso <- vegdist(iso_ocu_merge[, c(8:16364)], method = "bray")
+
+perm_13c <- adonis2(braycurtis_iso ~ diff_13C, data = iso_ocu_merge[, c(8:16364, 16402)], permutations = 999)
+
+perm_13c
+
+perm_15n <- adonis2(braycurtis_iso ~ diff_15N, data = iso_ocu_merge[, c(8:16364, 16401)], permutations = 999)
+
+perm_15n
 ```
