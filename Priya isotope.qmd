@@ -108,8 +108,12 @@ oculina_mod <- oculina_mod[, -c(4:11, 13:25, 29:39)] |>
 oculina_mod <- oculina_mod |>
   mutate(sample_id = replace(sample_id, sample_id == "A13-A", "A13-A-old"), 
          sample_id = replace(sample_id, sample_id == "A13-S", "A13-S-old"),
-         sample_id = replace(sample_id, sample_id == "A14-A", "A13-A-new"),
+         sample_id = replace(sample_id, sample_id == "A14-A", "A14-A-new"),
          sample_id = replace(sample_id, sample_id == "A14-S", "A14-S-old"))
+
+iso_sum_diff <- iso_sum_diff |>
+  mutate(sample_id = replace(sample_id, sample_id == "A-18-A", "A18-A"),
+         sample_id = replace(sample_id, sample_id == "A-18-S", "A18-S"))
 
 iso_ocu_merge <- oculina_mod |>
   left_join(iso_sum_diff, by = "sample_id")
