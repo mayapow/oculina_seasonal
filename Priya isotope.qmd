@@ -136,3 +136,98 @@ perm_15n <- adonis2(braycurtis_iso ~ diff_15N, data = iso_ocu_merge[, c(8:16364,
 
 perm_15n
 ```
+
+rfpermute to see which features are useful in determining isotope *difference 15N*
+
+```{r}
+library(rfPermute)
+
+num_df_iso_n15 <- iso_ocu_merge[,c(8:16364, 16401)]
+rfp_iso_n15 <- rfPermute(diff_15N ~., data = num_df_iso_n15, na.action = na.omit, ntree = 500, num.rep = 100)
+
+rfp_iso_n15
+
+rfp_table_iso_n15 <- as.data.frame(importance(rfp_iso_n15))  # Convert to a data frame
+rfp_table_iso_n15 <- tibble::rownames_to_column(rfp_iso_n15, var = "Feature")
+print(rfp_iso_n15)  # Display in console
+
+#significant_features <- rfp_table %>% filter(B.pval < 0.05 & NB.pval < 0.05)  # Adjust p-value threshold as needed
+
+#print(significant_features)
+
+```
+
+```{r}
+rfp_table_iso_n15 <- tibble::rownames_to_column(rfp_table_iso_n15, var = "Feature")
+
+```
+
+```{r}
+sig_feat_n15 <- rfp_table_iso_n15 %>% filter(`%IncMSE.pval` < 0.05) 
+write.csv(sig_feat_n15, file = "sig_feat_diff_n15_rfpermute.csv")
+sig_feat_n15 <- read.csv("sig_feat_diff_n15_rfpermute.csv")
+
+sig_rows_n15 <- sig_feat_n15$Feature
+
+num_df_sig_n15 <- data.matrix(num_df_final |>
+  select(all_of(sig_rows_n15)))
+
+log2FC_n15 <- sapply(sig_rows_n15, function(met){
+  
+  B_vals  <- (num_df_sig_n15[ocu_final$bleaching == "B", met])
+  NB_vals <- (num_df_sig_n15[ocu_final$bleaching == "NB", met])
+
+  mean_B  <- mean(B_vals,  na.rm = TRUE)
+  mean_NB <- mean(NB_vals, na.rm = TRUE)
+
+  log2(mean_B / mean_NB)
+})
+
+log2FC_n15_df <- data.frame(
+  metabolite = sig_feat_n15,
+  log2FC = log2FC_n15
+)
+
+
+
+```
+
+```{r, fig.height = 10, fig.width = 10}
+library(ggpattern)
+
+sig_feat_n15_joined <- log2FC_n15_df |>
+  inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
+  select(metabolite.Feature, 
+         `metabolite.X.IncMSE`, 
+         compound_class, 
+         origin, 
+         npc_number_superclass,
+         log2FC) |>
+     mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic"))
+
+sig_feat_n15_plot <- sig_feat_n15_joined |>
+  arrange(desc(metabolite.X.IncMSE)) |>
+  slice_head(n = 50)
+
+ggplot(sig_feat_n15_plot, 
+       aes(x = reorder(metabolite.Feature, `metabolite.X.IncMSE`), 
+           y = `metabolite.X.IncMSE`,
+           fill = compound_class,
+           pattern = Sign
+           )) +
+  
+  geom_col_pattern(
+  pattern_density = 0.2,
+  pattern_spacing = 0.03
+  ) +
+  
+  scale_fill_manual(values = c("#C969A1FF", "#CE4441FF", "#EE8577FF", "#EB7926FF", "#FFBB44FF", "#859B6CFF", "#62929AFF", "#004F63FF", "#122451FF")
+) +
+  
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Importance after rfPermute for n15 difference regression",
+       x = "Feature",
+       y = "Mean Increase MSE") +
+  theme_minimal()
+
+```
