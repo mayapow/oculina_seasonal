@@ -1,0 +1,59 @@
+---
+title: "shared_features_vips_1"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(ggVennDiagram)
+```
+
+You can add options to executable code like this
+
+```{r}
+chlor <- read.csv("rfp_chlor.csv")
+sym <- read.csv("rfp_table_sym.csv")
+phen <- read.csv("sig_feat_phenotype_rfpermute.csv")
+dep <- read.csv("sig_feat_dep_rfpermute.csv")
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+chlor_sig <- chlor |> filter(`X.IncMSE.pval` < 0.05)
+  
+sym_sig <- sym |> filter(`X.IncMSE.pval` < 0.05)
+```
+
+```{r}
+
+venn_data <- list(
+  Chlor = chlor_sig$Feature,
+  Sym = sym_sig$Feature,
+  Phen = phen$Feature,
+  Dep = dep$Feature
+)
+```
+
+```{r}
+
+venn_obj <- Venn(venn_data)
+venn <- ggVennDiagram(venn_data, label_color = "white")
+
+venn
+```
+
+```{r}
+overlap(venn_obj)
+```

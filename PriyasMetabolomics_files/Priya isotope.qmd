@@ -13,17 +13,221 @@ Quarto enables you to weave together content and executable code into a finished
 When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
 
 ```{r}
-1 + 1
 library(readxl)
 library(ggplot2)
 library(dplyr)
 library(vegan)
+library(stringr)
+library(tidyr)
 ```
 
 You can add options to executable code like this
 
 ```{r}
-metadata <- read.csv("Data/Nov_2024/oculina_nov24_metadata.csv")
+metadata_view <- read.csv("Data/Nov_2024/oculina_nov2024_isotopes.csv")
 ```
 
 The `echo: false` option disables the printing of code (only output is displayed).
+
+Ella's preliminary boxplots:
+
+```{r}
+library(SIBER)
+library(tidyverse)
+#library(rjags)
+library(ggplot2)
+library(here)
+library(lubridate)
+#help(SIBER)
+
+#nov 2024 data
+
+iso_nov24<-read.csv(here("Data/Nov_2024/oculina_nov2024_isotopes.csv"))
+iso_nov24 <- iso_nov24 %>%
+  filter(sample_id !="A5-A-1124-Algae", sample_id !="S11-S-new-1124-Algae") %>% #remove sample IDs that are not paired algae & host
+  filter(algae_host != "Filter") #remove filter samples for now
+```
+
+```{r}
+iso_nov24_host <- read.csv(here("Data/Nov_2024/oculina_nov2024_isotopes_host.csv")) 
+iso_nov24_host <- iso_nov24_host %>%
+  select(-sample_id,-algae_host,-weight_mg,-total_C_ug,-pct_C,-pct_N,-total_N_ug)
+iso_nov24_algae<-read.csv(here("Data/Nov_2024/oculina_nov2024_isotopes_algae.csv"))
+iso_nov24_algae <- iso_nov24_algae %>%
+  select(-sample_id,-algae_host,-weight_mg,-total_C_ug,-pct_C,-pct_N,-total_N_ug)
+iso_nov24_holo <- iso_nov24_algae %>%
+  left_join(iso_nov24_host) %>%
+  mutate(d15N_holo = d15N_host - d15N_algae,
+         d13C_holo = d13C_host - d13C_algae)
+
+```
+
+```{r}
+iso_d13C_depth_sa <- ggplot(iso_nov24, aes(x = algae_host, y=d13C, fill = algae_host))+
+  geom_boxplot()+
+  geom_jitter(alpha=0.8, width=0.2)+
+  theme_classic(base_size = 22)+
+  labs(x = "Timepoint", y = expression(paste(delta^{13}, "C (‰, V-PDB)")))+
+  theme(legend.position = "none") +
+  facet_wrap(~depth_sa)
+iso_d13C_depth_sa
+```
+
+```{r}
+iso_d15N_depth_sa <- ggplot(iso_nov24, aes(x = algae_host, y=d15N, fill = algae_host))+
+  geom_boxplot()+
+  geom_jitter(alpha=0.8, width=0.2)+
+  theme_classic(base_size = 22)+
+  labs(x = "Timepoint", y = expression(paste(delta^{15}, "N (‰, air)")))+
+  theme(legend.position = "none")+
+  facet_wrap(~depth_sa)
+iso_d15N_depth_sa
+```
+
+merging host samples with metabolomic matrix
+
+```{r}
+
+
+iso_sum_diff <- read.csv("Data/Nov_2024/priya_sum_diff_ocu_nov24_isotopes.csv")
+
+iso_sum_diff <- iso_sum_diff |>
+  mutate(sample_id = str_remove(sample_id, "-1124-Algae"))
+
+oculina_mod <- oculina_final[-c(40:44),] |>
+  mutate(sample_id = str_remove(full_id, "-1124"))
+
+oculina_mod <- oculina_mod[, -c(4:11, 13:25, 29:39)] |>
+  mutate(sample_id = str_remove(sample_id, "_1124"))
+
+
+```
+
+```{r}
+
+oculina_mod <- oculina_mod |>
+  mutate(sample_id = replace(sample_id, sample_id == "A13-A", "A13-A-old"), 
+         sample_id = replace(sample_id, sample_id == "A13-S", "A13-S-old"),
+         sample_id = replace(sample_id, sample_id == "A14-A", "A14-A-new"),
+         sample_id = replace(sample_id, sample_id == "A14-S", "A14-S-old"))
+
+iso_sum_diff <- iso_sum_diff |>
+  mutate(sample_id = replace(sample_id, sample_id == "A-18-A", "A18-A"),
+         sample_id = replace(sample_id, sample_id == "A-18-S", "A18-S"))
+
+iso_ocu_merge <- oculina_mod |>
+  left_join(iso_sum_diff, by = "sample_id")
+
+iso_ocu_merge <- iso_ocu_merge |>
+  filter(!is.na(diff_13C))
+```
+
+PERMANOVA for N15 and C13
+
+```{r}
+
+braycurtis_iso <- vegdist(iso_ocu_merge[, c(8:16364)], method = "bray")
+
+perm_13c <- adonis2(braycurtis_iso ~ diff_13C, data = iso_ocu_merge[, c(8:16364, 16402)], permutations = 999)
+
+perm_13c
+
+perm_15n <- adonis2(braycurtis_iso ~ diff_15N, data = iso_ocu_merge[, c(8:16364, 16401)], permutations = 999)
+
+perm_15n
+```
+
+rfpermute to see which features are useful in determining isotope *difference 15N*
+
+```{r}
+library(rfPermute)
+
+num_df_iso_n15 <- iso_ocu_merge[,c(8:16364, 16401)]
+rfp_iso_n15 <- rfPermute(diff_15N ~., data = num_df_iso_n15, na.action = na.omit, ntree = 500, num.rep = 100)
+
+rfp_iso_n15
+
+rfp_table_iso_n15 <- as.data.frame(importance(rfp_iso_n15))  # Convert to a data frame
+rfp_table_iso_n15 <- tibble::rownames_to_column(rfp_iso_n15, var = "Feature")
+print(rfp_iso_n15)  # Display in console
+
+#significant_features <- rfp_table %>% filter(B.pval < 0.05 & NB.pval < 0.05)  # Adjust p-value threshold as needed
+
+#print(significant_features)
+
+```
+
+```{r}
+rfp_table_iso_n15 <- tibble::rownames_to_column(rfp_table_iso_n15, var = "Feature")
+
+```
+
+```{r}
+sig_feat_n15 <- rfp_table_iso_n15 %>% filter(`%IncMSE.pval` < 0.05) 
+write.csv(sig_feat_n15, file = "sig_feat_diff_n15_rfpermute.csv")
+sig_feat_n15 <- read.csv("sig_feat_diff_n15_rfpermute.csv")
+
+sig_rows_n15 <- sig_feat_n15$Feature
+
+num_df_sig_n15 <- data.matrix(num_df_final |>
+  select(all_of(sig_rows_n15)))
+
+log2FC_n15 <- sapply(sig_rows_n15, function(met){
+  
+  B_vals  <- (num_df_sig_n15[ocu_final$bleaching == "B", met])
+  NB_vals <- (num_df_sig_n15[ocu_final$bleaching == "NB", met])
+
+  mean_B  <- mean(B_vals,  na.rm = TRUE)
+  mean_NB <- mean(NB_vals, na.rm = TRUE)
+
+  log2(mean_B / mean_NB)
+})
+
+log2FC_n15_df <- data.frame(
+  metabolite = sig_feat_n15,
+  log2FC = log2FC_n15
+)
+
+
+
+```
+
+```{r, fig.height = 10, fig.width = 10}
+library(ggpattern)
+
+sig_feat_n15_joined <- log2FC_n15_df |>
+  inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
+  select(metabolite.Feature, 
+         `metabolite.X.IncMSE`, 
+         compound_class, 
+         origin, 
+         npc_number_superclass,
+         log2FC) |>
+     mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic"))
+
+sig_feat_n15_plot <- sig_feat_n15_joined |>
+  arrange(desc(metabolite.X.IncMSE)) |>
+  slice_head(n = 50)
+
+ggplot(sig_feat_n15_plot, 
+       aes(x = reorder(metabolite.Feature, `metabolite.X.IncMSE`), 
+           y = `metabolite.X.IncMSE`,
+           fill = compound_class,
+           pattern = Sign
+           )) +
+  
+  geom_col_pattern(
+  pattern_density = 0.2,
+  pattern_spacing = 0.03
+  ) +
+  
+  scale_fill_manual(values = c("#C969A1FF", "#CE4441FF", "#EE8577FF", "#EB7926FF", "#FFBB44FF", "#859B6CFF", "#62929AFF", "#004F63FF", "#122451FF")
+) +
+  
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Importance after rfPermute for n15 difference regression",
+       x = "Feature",
+       y = "Mean Increase MSE") +
+  theme_minimal()
+
+```
