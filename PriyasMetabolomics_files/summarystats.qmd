@@ -97,7 +97,7 @@ write.csv(ocu_fin_div, file = "oculina_final_diversity.csv")
 ```
 
 ```{r}
-#ocu_fin_div <- read.csv("oculina_final_diversity.csv")
+ocu_fin_div <- read.csv("oculina_final_diversity.csv")
 
 ocu_fin_div <- ocu_fin_div |>
   mutate(Phenotype = bleaching) |>
@@ -176,6 +176,45 @@ ggplot(ocu_fin_div, aes(x = Phenotype, y = Evenness, fill = Phenotype)) +
   ) +
   
   stat_compare_means(aes(group = Phenotype), 
+                     method = "kruskal.test", 
+                     label = "p.format",
+                     ) 
+```
+
+diversity box plots with depth_sa as the three categories of box plots
+
+```{r}
+ocu_fin_div_depthsa <- ocu_fin_div |>
+  full_join(oculina_final[, c(6,16426)]) 
+
+ocu_fin_div_depthsa <- ocu_fin_div_depthsa[-c(20, 26, 39, 41, 47, 64, 66, 73, 75),]
+```
+
+```{r}
+
+ocu_fin_div_depthsa <- ocu_fin_div_depthsa |>
+  filter(!is.na(depth_sa))
+ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness, fill = depth_sa)) +
+  geom_boxplot(outlier.shape = NA) +
+  
+  scale_fill_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold")) +
+  
+  theme_minimal() +
+   geom_point(
+    position = position_jitterdodge(
+      jitter.width = 0.2,   # stay within each box
+      jitter.height = 0,
+      dodge.width  = 1,     
+    ), 
+    
+    shape = 21,               # fill + outline
+    color = "black",          # outline
+    stroke = 0.45,
+    size = 1,
+    alpha = 0.8
+  ) +
+  
+  stat_compare_means(aes(group = depth_sa), 
                      method = "kruskal.test", 
                      label = "p.format",
                      ) 
