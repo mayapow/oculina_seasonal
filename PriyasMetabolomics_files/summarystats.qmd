@@ -219,3 +219,47 @@ ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness, fill = depth_sa)) +
                      label = "p.format",
                      ) 
 ```
+
+```{r}
+# of "oculina_final.csv"
+# ; symbiont / mL
+# ; chlorophyll/
+
+
+ocu_final <- read.csv("../Data/Metabolomics/oculina_final.csv")
+```
+
+```{r}
+
+ocu_fin_div_physio <- ocu_fin_div |>
+ left_join(ocu_final[,c(6, 16422, 16423, 16426)], join_by(sample_id == id))
+```
+
+```{r}
+ggplot(ocu_fin_div_physio, aes(x = Richness, y = chla_pg_sym, color = depth_sa)) +
+  geom_point() +
+  
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold"))
+  
+```
+
+```{r}
+ggplot(ocu_fin_div_physio, aes(x = Richness, y = sym_cm2, color = depth_sa)) +
+  geom_point() +
+  
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold"))
+```
+
+```{r}
+ggplot(ocu_fin_div_physio, aes(x = Entropy, y = chla_pg_sym, color = depth_sa)) +
+  geom_point() +
+  
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold"))
+```
+
+```{r}
+ggplot(ocu_fin_div_physio, aes(x = Entropy, y = sym_cm2, color = depth_sa)) +
+  geom_point() +
+  
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold"))
+```
