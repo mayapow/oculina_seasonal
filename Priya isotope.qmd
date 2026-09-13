@@ -231,3 +231,88 @@ ggplot(sig_feat_n15_plot,
   theme_minimal()
 
 ```
+
+```{r}
+library(rfPermute)
+
+num_df_iso_13c <- iso_ocu_merge[,c(8:16364, 16402)]
+rfp_iso_13c <- rfPermute(diff_13C ~., data = num_df_iso_13c, na.action = na.omit, ntree = 500, num.rep = 100)
+
+rfp_iso_13c
+
+rfp_table_iso_13c <- as.data.frame(importance(rfp_iso_13c))  # Convert to a data frame
+
+```
+
+```{r}
+#rfp_table_iso_13c <- tibble::rownames_to_column(rfp_table_iso_13c, var = "Feature")
+#print(rfp_iso_13c)  # Display in console
+
+sig_feat_13c <- rfp_table_iso_13c %>% filter(`%IncMSE.pval` < 0.05) 
+write.csv(sig_feat_13c, file = "sig_feat_diff_13c_rfpermute.csv")
+sig_feat_13c <- read.csv("sig_feat_diff_13c_rfpermute.csv")
+
+sig_rows_13c <- sig_feat_13c$Feature
+
+num_df_sig_13c <- data.matrix(num_df_final |>
+  select(all_of(sig_rows_13c)))
+
+log2FC_13c <- sapply(sig_rows_13c, function(met){
+  
+  B_vals  <- (num_df_sig_13c[ocu_final$bleaching == "B", met])
+  NB_vals <- (num_df_sig_13c[ocu_final$bleaching == "NB", met])
+
+  mean_B  <- mean(B_vals,  na.rm = TRUE)
+  mean_NB <- mean(NB_vals, na.rm = TRUE)
+
+  log2(mean_B / mean_NB)
+})
+
+log2FC_13c_df <- data.frame(
+  metabolite = sig_feat_13c,
+  log2FC = log2FC_13c
+)
+
+
+
+```
+
+```{r, fig.height = 10, fig.width = 10}
+library(ggpattern)
+
+sig_feat_13c_joined <- log2FC_13c_df |>
+  inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
+  select(metabolite.Feature, 
+         `metabolite.X.IncMSE`, 
+         compound_class, 
+         origin, 
+         npc_number_superclass,
+         log2FC) |>
+     mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic"))
+
+sig_feat_13c_plot <- sig_feat_13c_joined |>
+  arrange(desc(metabolite.X.IncMSE)) |>
+  slice_head(n = 50)
+
+ggplot(sig_feat_13c_plot, 
+       aes(x = reorder(metabolite.Feature, `metabolite.X.IncMSE`), 
+           y = `metabolite.X.IncMSE`,
+           fill = compound_class,
+           pattern = Sign
+           )) +
+  
+  geom_col_pattern(
+  pattern_density = 0.2,
+  pattern_spacing = 0.03
+  ) +
+  
+  scale_fill_manual(values = c("#C969A1FF", "#CE4441FF", "#EE8577FF", "#EB7926FF", "#FFBB44FF", "#859B6CFF", "#62929AFF", "#004F63FF", "#122451FF")
+) +
+  
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Importance after rfPermute for 13c difference regression",
+       x = "Feature",
+       y = "Mean Increase MSE") +
+  theme_minimal()
+
+```
