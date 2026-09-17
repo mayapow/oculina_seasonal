@@ -4,10 +4,11 @@
 #install.packages("SIBER")
 library(SIBER)
 library(tidyverse)
-library(rjags)
+#library(rjags)
 library(ggplot2)
 library(here)
 library(lubridate)
+library(car)
 #help(SIBER)
 
 #nov 2024 data
@@ -37,6 +38,21 @@ iso_d13C_depth_sa <- ggplot(iso_nov24, aes(x = algae_host, y=d13C, fill = algae_
   facet_wrap(~depth_sa)
 iso_d13C_depth_sa
 
+ggsave(here("Output", "Nov_2024","iso_d13C_depth_sa_box.pdf"), device = "pdf", h = 6, w = 10, iso_d13C_depth_sa)
+
+#C13 H-S
+iso_d13C_depth_sa_holo <- ggplot(iso_nov24_holo, aes(x = depth_sa, y=d13C_holo, fill = depth_sa))+
+  geom_boxplot()+
+  geom_jitter(alpha=0.8, width=0.2)+
+  theme_classic(base_size = 22)+
+  labs(x = "Fragment Symbiotic State", y = expression(paste(delta^{13}, "C (‰, V-PDB) H-S")))+
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c("white","lightyellow","brown"))
+iso_d13C_depth_sa_holo
+
+ggsave(here("Output", "Nov_2024","iso_d13C_depth_sa_holo.pdf"), device = "pdf", h = 6, w = 10, iso_d13C_depth_sa_holo)
+
+#N15 algae & host values
 iso_d15N_depth_sa <- ggplot(iso_nov24, aes(x = algae_host, y=d15N, fill = algae_host))+
   geom_boxplot()+
   geom_jitter(alpha=0.8, width=0.2)+
@@ -45,6 +61,20 @@ iso_d15N_depth_sa <- ggplot(iso_nov24, aes(x = algae_host, y=d15N, fill = algae_
   theme(legend.position = "none")+
   facet_wrap(~depth_sa)
 iso_d15N_depth_sa
+
+ggsave(here("Output", "Nov_2024","iso_d15N_depth_sa_box.pdf"), device = "pdf", h = 6, w = 10, iso_d15N_depth_sa)
+
+#N15 H-S
+iso_d15N_depth_sa_holo <- ggplot(iso_nov24_holo, aes(x = depth_sa, y=d15N_holo, fill = depth_sa))+
+  geom_boxplot()+
+  geom_jitter(alpha=0.8, width=0.2)+
+  theme_classic(base_size = 22)+
+  labs(x = "Fragment Symbiotic State", y = expression(paste(delta^{15}, "N (‰, air) H-S")))+
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c("white","lightyellow","brown"))
+iso_d15N_depth_sa_holo
+
+ggsave(here("Output", "Nov_2024","iso_d15N_depth_sa_holo.pdf"), device = "pdf", h = 6, w = 10, iso_d15N_depth_sa_holo)
 
 #anova c13
 mod_d13C <- aov(d13C ~ depth_sa*algae_host, data = iso_nov24)
@@ -86,46 +116,69 @@ pairs(emm_d15N)
 # Deep Aposymbiotic - Shallow Symbiotic       1.159 0.196 145   5.925 <0.0001
 # Shallow Aposymbiotic - Shallow Symbiotic    0.704 0.161 145   4.385 <0.0001
 
+#anova h-s
+#C13
+mod_d13C_hs <- aov(d13C_holo ~ depth_sa, data = iso_nov24_holo)
+summary(mod_d13C_hs)
+Anova(mod_d13C_hs)
+# Sum Sq Df F value Pr(>F)
+# depth_sa   0.2648  2  0.4819 0.6197
+
+#N15
+mod_d15N_hs <- aov(d15N_holo ~ depth_sa, data = iso_nov24_holo)
+summary(mod_d15N_hs)
+Anova(mod_d15N_hs)
+# Sum Sq Df F value    Pr(>F)    
+# depth_sa  24.052  2  11.069 6.655e-05 ***
+
+#pairwise n15
+emm_d15N_hs <- emmeans::emmeans(mod_d15N_hs, ~depth_sa)
+pairs(emm_d15N_hs)
+# contrast                                 estimate    SE df t.ratio p.value
+# Deep Aposymbiotic - Shallow Aposymbiotic   -0.082 0.332 70  -0.247  0.9668
+# Deep Aposymbiotic - Shallow Symbiotic      -1.225 0.332 70  -3.697  0.0012
+# Shallow Aposymbiotic - Shallow Symbiotic   -1.143 0.274 70  -4.177  0.0002
+
+
+#plot of data to look at overlap
 iso_d13C_d15N <- ggplot(iso_nov24, aes(x = d13C, y=d15N, color = algae_host))+
   geom_point() +
   theme_gray(base_size = 22)+
-  labs(x = expression(paste(delta^{13}, "C (‰, V-PDB)")), y = expression(paste(delta^{15}, "N (‰, air)")))
-  #facet_wrap(~depth_sa)
+  labs(x = expression(paste(delta^{13}, "C (‰, V-PDB)")), y = expression(paste(delta^{15}, "N (‰, air)")))+
+  facet_wrap(~depth_sa) +
+  stat_ellipse(aes(group = interaction(algae_host, depth_sa), 
+                   fill = algae_host, 
+                   color = algae_host), 
+               alpha = 0.25, 
+               level = 0.95,
+               type = "norm",
+               geom = "polygon")
 iso_d13C_d15N
 
+sbg <- iso_nov24 %>% 
+  group_by(algae_host, depth_sa) %>% 
+  summarise(count = n(),
+            mC = mean(d13C), 
+            sdC = sd(d13C), 
+            mN = mean(d15N), 
+            sdN = sd(d15N))
 
-#Read in and clean up data
-iso<-read.csv(here("Data/Seasonal/isotopes_all_oculina_seasonal.csv"))
-iso <- iso %>%
-  mutate(date = mdy(timepoint)) %>%
-  filter(algae_host != "Filter") %>% #remove filter samples for now
-  filter(date != "2023-07-01") #remove july 2023 data bc only a few points that troye tested, not useful
-  
-
-iso_d13C_time <- ggplot(iso, aes(x = timepoint, y=d13C, fill = timepoint))+
-  geom_boxplot()+
-  geom_jitter(alpha=0.8, width=0.2)+
-  theme_classic(base_size = 22)+
-  labs(x = "Timepoint", y = expression(paste(delta^{13}, "C (‰, V-PDB)")))+
-  theme(legend.position = "none") +
-  facet_wrap(~algae_host)
-iso_d13C_time
-
-iso_d15N_time <- ggplot(iso, aes(x = timepoint, y=d15N, fill = timepoint))+
-  geom_boxplot()+
-  geom_jitter(alpha=0.8, width=0.2)+
-  theme_classic(base_size = 22)+
-  labs(x = "Timepoint", y = expression(paste(delta^{15}, "N (‰, air)")))+
-  theme(legend.position = "none")+
-  facet_wrap(~algae_host)
-iso_d15N_time
-
-iso_d13C_d15N_time <- ggplot(iso, aes(x = d13C, y=d15N, color = algae_host))+
-  geom_point() +
-  theme_gray(base_size = 22)+
-  labs(x = expression(paste(delta^{13}, "C (‰, V-PDB)")), y = expression(paste(delta^{15}, "N (‰, air)")))+
-  facet_wrap(~timepoint, nrow = 1, ncol = 5)
-iso_d13C_d15N_time
+second.plot <- iso_d13C_d15N +
+  geom_errorbar(data = sbg, 
+                mapping = aes(x = mC, y = mN,
+                              ymin = mN - 1.96*sdN, 
+                              ymax = mN + 1.96*sdN), 
+                width = 0) +
+  geom_errorbarh(data = sbg, 
+                 mapping = aes(x = mC, y = mN,
+                               xmin = mC - 1.96*sdC,
+                               xmax = mC + 1.96*sdC),
+                 height = 0) + 
+  geom_point(data = sbg, aes(x = mC, 
+                             y = mN,
+                             fill = algae_host), 
+             color = "black", shape = 22, size = 5,
+             alpha = 0.7, show.legend = FALSE)
 
 ###Load in all data
 

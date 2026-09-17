@@ -392,3 +392,5 @@ pairs(chla_sym_emm)
 # Deep Aposymbiotic - Shallow Symbiotic      -2.330 0.677 70  -3.444  0.0028
 # Shallow Aposymbiotic - Shallow Symbiotic   -1.933 0.559 70  -3.461  0.0026
 
+
+
