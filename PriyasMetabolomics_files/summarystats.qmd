@@ -194,7 +194,7 @@ ocu_fin_div_depthsa <- ocu_fin_div_depthsa[-c(20, 26, 39, 41, 47, 64, 66, 73, 75
 
 ocu_fin_div_depthsa <- ocu_fin_div_depthsa |>
   filter(!is.na(depth_sa))
-ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness, fill = depth_sa)) +
+ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Evenness, fill = depth_sa)) +
   geom_boxplot(outlier.shape = NA) +
   
   scale_fill_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold")) +
@@ -236,30 +236,82 @@ ocu_fin_div_physio <- ocu_fin_div |>
 ```
 
 ```{r}
+
+model_chl_rich <- lm(chla_pg_sym ~ Richness, data = ocu_fin_div_physio)
+r_squared_chl_rich <- summary(model_chl_rich)$r.squared
+
+r2_label_chl_rich <- paste0("R^2 = ", round(r_squared_chl_rich, 3))
+
+
 ggplot(ocu_fin_div_physio, aes(x = Richness, y = chla_pg_sym, color = depth_sa)) +
   geom_point() +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold"))
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  
+  stat_cor(method = "pearson", label.x.npc = "left", label.y.npc = "top") + # Adds R and p-value
+  
+ #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
+  
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3"))
   
 ```
 
 ```{r}
+
+model_sym_rich <- lm(sym_cm2 ~ Richness, data = ocu_fin_div_physio)
+r_squared_sym_rich <- summary(model_sym_rich)$r.squared
+
+r2_label_sym_rich <- paste0("R^2 = ", round(r_squared_sym_rich, 3))
+
+
 ggplot(ocu_fin_div_physio, aes(x = Richness, y = sym_cm2, color = depth_sa)) +
   geom_point() +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold"))
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  
+  stat_cor(method = "pearson", label.x.npc = "left", label.y.npc = "top") + # Adds R and p-value
+  
+ #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
+  
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3"))
 ```
 
 ```{r}
+
+model_chl_ent <- lm(chla_pg_sym ~ Entropy, data = ocu_fin_div_physio)
+r_squared_chl_ent <- summary(model_chl_ent)$r.squared
+
+r2_label_chl_ent <- paste0("R^2 = ", round(r_squared_chl_ent, 3))
+
+
 ggplot(ocu_fin_div_physio, aes(x = Entropy, y = chla_pg_sym, color = depth_sa)) +
   geom_point() +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold"))
+   geom_smooth(method = "lm", se = FALSE, color = "black") +
+  
+  stat_cor(method = "pearson", label.x.npc = "left", label.y.npc = "top") + # Adds R and p-value
+  
+ #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
+  
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3"))
 ```
 
 ```{r}
+
+model_sym_ent <- lm(sym_cm2 ~ Entropy, data = ocu_fin_div_physio)
+r_squared_sym_ent <- summary(model_sym_ent)$r.squared
+
+r2_label_sym_ent <- paste0("R^2 = ", round(r_squared_chl_ent, 3))
+
+
 ggplot(ocu_fin_div_physio, aes(x = Entropy, y = sym_cm2, color = depth_sa)) +
   geom_point() +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold"))
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  
+  stat_cor(method = "pearson", label.x.npc = "left", label.y.npc = "top") + # Adds R and p-value
+  
+ #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
+  
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3"))
 ```
