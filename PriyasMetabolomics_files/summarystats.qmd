@@ -197,7 +197,7 @@ ocu_fin_div_depthsa <- ocu_fin_div_depthsa |>
 ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Evenness, fill = depth_sa)) +
   geom_boxplot(outlier.shape = NA) +
   
-  scale_fill_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold")) +
+  scale_fill_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3")) +
   
   theme_minimal() +
    geom_point(
@@ -248,7 +248,7 @@ ggplot(ocu_fin_div_physio, aes(x = Richness, y = chla_pg_sym, color = depth_sa))
   
   geom_smooth(method = "lm", se = FALSE, color = "black") +
   
-  stat_cor(method = "pearson", label.x.npc = "left", label.y.npc = "top") + # Adds R and p-value
+  stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") + # Adds R and p-value
   
  #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
   
@@ -269,7 +269,7 @@ ggplot(ocu_fin_div_physio, aes(x = Richness, y = sym_cm2, color = depth_sa)) +
   
   geom_smooth(method = "lm", se = FALSE, color = "black") +
   
-  stat_cor(method = "pearson", label.x.npc = "left", label.y.npc = "top") + # Adds R and p-value
+  stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") + # Adds R and p-value
   
  #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
   
