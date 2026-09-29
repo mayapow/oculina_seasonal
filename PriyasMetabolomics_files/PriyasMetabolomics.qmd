@@ -153,7 +153,7 @@ pcoa_df_ocu_fin_depthsa <- data.frame(
 pcoa_oculina_fin_depthsa <-ggplot(data = pcoa_df_ocu_fin_depthsa, aes(x = PC1, y = PC2, color = depth_sa)) + 
   geom_point() +
  
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold")) +
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3")) +
   
   theme_classic(base_size = 8) +
   theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
@@ -198,9 +198,9 @@ pcoa_df_ocu_fin_depthsa_no_out <- data.frame(
 pcoa_oculina_fin_depthsa_no_out <-ggplot(data = pcoa_df_ocu_fin_depthsa_no_out, aes(x = PC1, y = PC2, color = depth_sa)) + 
   geom_point() +
  
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "gold")) +
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3")) +
   
-  theme_classic(base_size = 8) +
+    theme_classic(base_size = 14) +
   theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
         ) +
 

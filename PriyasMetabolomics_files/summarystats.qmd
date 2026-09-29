@@ -191,6 +191,22 @@ ocu_fin_div_depthsa <- ocu_fin_div_depthsa[-c(20, 26, 39, 41, 47, 64, 66, 73, 75
 ```
 
 ```{r}
+# Fit ANOVA and Tukey test
+evenness_model <- aov(Evenness ~ depth_sa, data = ocu_fin_div_depthsa)
+evenness_tukey <- TukeyHSD(evenness_model)
+
+# Extract letters using multcompView or agricolae
+# Example using multcomp
+
+#library(multcomp)
+evenness_cld <- glht(evenness_model, linfct = mcp(depth_sa = "Tukey"))
+evenness_cld_res <- cld(evenness_cld)
+evenness_letters_df <- data.frame(
+  group = names(evenness_cld_res$mcletters$Letters),
+                         letter = evenness_cld_res$mcletters$Letters)
+```
+
+```{r}
 
 ocu_fin_div_depthsa <- ocu_fin_div_depthsa |>
   filter(!is.na(depth_sa))
@@ -232,18 +248,18 @@ ocu_final <- read.csv("../Data/Metabolomics/oculina_final.csv")
 ```{r}
 
 ocu_fin_div_physio <- ocu_fin_div |>
- left_join(ocu_final[,c(6, 16422, 16423, 16426)], join_by(sample_id == id))
+ left_join(ocu_final[,c(6, 16405, 16421, 16422, 16426)], join_by(sample_id == id))
 ```
 
 ```{r}
 
-model_chl_rich <- lm(chla_pg_sym ~ Richness, data = ocu_fin_div_physio)
+model_chl_rich <- lm(ug_chla_cm ~ Richness, data = ocu_fin_div_physio)
 r_squared_chl_rich <- summary(model_chl_rich)$r.squared
 
 r2_label_chl_rich <- paste0("R^2 = ", round(r_squared_chl_rich, 3))
 
 
-ggplot(ocu_fin_div_physio, aes(x = Richness, y = chla_pg_sym, color = depth_sa)) +
+ggplot(ocu_fin_div_physio, aes(x = Richness, y = ug_chla_cm, color = depth_sa)) +
   geom_point() +
   
   geom_smooth(method = "lm", se = FALSE, color = "black") +
@@ -252,7 +268,11 @@ ggplot(ocu_fin_div_physio, aes(x = Richness, y = chla_pg_sym, color = depth_sa))
   
  #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3"))
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3")) +
+theme_classic(base_size = 14) +
+  theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
+        ) 
+
   
 ```
 
@@ -313,5 +333,9 @@ ggplot(ocu_fin_div_physio, aes(x = Entropy, y = sym_cm2, color = depth_sa)) +
   
  #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3"))
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3")) +
+  theme_classic(base_size = 14) +
+  theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
+        ) 
+
 ```

@@ -20,7 +20,7 @@ library(vegan)
 library(ggplot2)
 
 
-sym_chla <- read.csv("Data/Nov_2024/oculina_nov24_physio.csv")
+sym_chla <- read.csv("../Data/Nov_2024/oculina_nov24_physio.csv")
 ```
 
 You can add options to executable code like this
