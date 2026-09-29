@@ -194,16 +194,19 @@ ocu_fin_div_depthsa <- ocu_fin_div_depthsa[-c(20, 26, 39, 41, 47, 64, 66, 73, 75
 # Fit ANOVA and Tukey test
 evenness_model <- aov(Evenness ~ depth_sa, data = ocu_fin_div_depthsa)
 evenness_tukey <- TukeyHSD(evenness_model)
+evenness_summary <- summary(evenness_model)
+evenness_summary
 
-# Extract letters using multcompView or agricolae
-# Example using multcomp
+library(agricolae)
+tukey_evenness <- HSD.test(evenness_model, "depth_sa", group = TRUE)
 
-#library(multcomp)
-evenness_cld <- glht(evenness_model, linfct = mcp(depth_sa = "Tukey"))
-evenness_cld_res <- cld(evenness_cld)
-evenness_letters_df <- data.frame(
-  group = names(evenness_cld_res$mcletters$Letters),
-                         letter = evenness_cld_res$mcletters$Letters)
+letters_df_evenness <- data.frame(
+  group = row.names(tukey_evenness$groups),
+  letter = tukey_evenness$groups$groups,
+  y_pos = tapply(ocu_fin_div_depthsa$Evenness, ocu_fin_div_depthsa$depth_sa, max) + 0.5
+)
+
+
 ```
 
 ```{r}
@@ -229,11 +232,60 @@ ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Evenness, fill = depth_sa)) +
     size = 1,
     alpha = 0.8
   ) +
+
+geom_text(data = letters_df_evenness, aes(x = group, y = y_pos, label = letter), inherit.aes = FALSE) +
+  labs(
+   # subtitle = paste("ANOVA p-value:", format.pval(p_val, digits = 3)),
+    x = "Group",
+    y = "Value"
+  ) 
+```
+
+```{r}
+richness_model <- aov(Richness ~ depth_sa, data = ocu_fin_div_depthsa)
+richness_tukey <- TukeyHSD(richness_model)
+richness_summary <- summary(richness_model)
+richness_summary
+
+library(agricolae)
+tukey_richness <- HSD.test(richness_model, "depth_sa", group = TRUE)
+
+letters_df_richness <- data.frame(
+  group = row.names(tukey_richness$groups),
+  letter = tukey_richness$groups$groups,
+  y_pos = tapply(ocu_fin_div_depthsa$Richness, ocu_fin_div_depthsa$depth_sa, max) + 0.5
+)
+```
+
+```{r}
+#ocu_fin_div_depthsa <- ocu_fin_div_depthsa |>
+ # filter(!is.na(depth_sa))
+ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness, fill = depth_sa)) +
+  geom_boxplot(outlier.shape = NA) +
   
-  stat_compare_means(aes(group = depth_sa), 
-                     method = "kruskal.test", 
-                     label = "p.format",
-                     ) 
+  scale_fill_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3")) +
+  
+  theme_minimal() +
+   geom_point(
+    position = position_jitterdodge(
+      jitter.width = 0.2,   # stay within each box
+      jitter.height = 0,
+      dodge.width  = 1,     
+    ), 
+    
+    shape = 21,               # fill + outline
+    color = "black",          # outline
+    stroke = 0.45,
+    size = 1,
+    alpha = 0.8
+  ) +
+
+geom_text(data = letters_df_richness, aes(x = group, y = y_pos, label = letter), inherit.aes = FALSE) +
+  labs(
+   # subtitle = paste("ANOVA p-value:", format.pval(p_val, digits = 3)),
+    x = "Group",
+    y = "Value"
+  ) 
 ```
 
 ```{r}
@@ -249,6 +301,10 @@ ocu_final <- read.csv("../Data/Metabolomics/oculina_final.csv")
 
 ocu_fin_div_physio <- ocu_fin_div |>
  left_join(ocu_final[,c(6, 16405, 16421, 16422, 16426)], join_by(sample_id == id))
+```
+
+```{r}
+
 ```
 
 ```{r}
