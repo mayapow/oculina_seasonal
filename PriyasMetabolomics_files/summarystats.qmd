@@ -233,7 +233,7 @@ ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Evenness, fill = depth_sa)) +
     alpha = 0.8
   ) +
 
-geom_text(data = letters_df_evenness, aes(x = group, y = y_pos, label = letter), inherit.aes = FALSE) +
+geom_text(data = letters_df_evenness, aes(x = group, y = Inf, label = letter, vjust = 1), inherit.aes = FALSE) +
   labs(
    # subtitle = paste("ANOVA p-value:", format.pval(p_val, digits = 3)),
     x = "Group",
@@ -257,15 +257,20 @@ letters_df_richness <- data.frame(
 )
 ```
 
-```{r}
+**In Poster**
+
+```{r, fig.width = 8}
 #ocu_fin_div_depthsa <- ocu_fin_div_depthsa |>
  # filter(!is.na(depth_sa))
 ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness, fill = depth_sa)) +
   geom_boxplot(outlier.shape = NA) +
   
-  scale_fill_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3")) +
+  scale_fill_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "hotpink3")) +
   
-  theme_minimal() +
+  theme_classic(base_size = 14) +
+  
+  #theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+
    geom_point(
     position = position_jitterdodge(
       jitter.width = 0.2,   # stay within each box
@@ -280,11 +285,12 @@ ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness, fill = depth_sa)) +
     alpha = 0.8
   ) +
 
-geom_text(data = letters_df_richness, aes(x = group, y = y_pos, label = letter), inherit.aes = FALSE) +
+geom_text(data = letters_df_richness, aes(x = group, y = Inf, label = letter, vjust = 1), inherit.aes = FALSE) +
   labs(
    # subtitle = paste("ANOVA p-value:", format.pval(p_val, digits = 3)),
-    x = "Group",
-    y = "Value"
+    x = "Fragment symbiotic state",
+    y = "Metabolite Richness",
+    fill = "Fragment symbiotic state"
   ) 
 ```
 
@@ -307,27 +313,38 @@ ocu_fin_div_physio <- ocu_fin_div |>
 
 ```
 
+**In Poster**
+
 ```{r}
 
-model_chl_rich <- lm(ug_chla_cm ~ Richness, data = ocu_fin_div_physio)
-r_squared_chl_rich <- summary(model_chl_rich)$r.squared
+#model_chl_rich <- lm(ug_chla_cm ~ Richness, data = ocu_fin_div_physio)
+#r_squared_chl_rich <- summary(model_chl_rich)$r.squared
 
-r2_label_chl_rich <- paste0("R^2 = ", round(r_squared_chl_rich, 3))
+#r2_label_chl_rich <- paste0("R^2 = ", round(r_squared_chl_rich, 3))
 
+ocu_fin_div_physio_no_chlor_neg <- ocu_fin_div_physio |>
+  mutate(ug_chla_cm = if_else(ug_chla_cm < 0, 0, ug_chla_cm))
 
-ggplot(ocu_fin_div_physio, aes(x = Richness, y = ug_chla_cm, color = depth_sa)) +
+ggplot(ocu_fin_div_physio_no_chlor_neg, aes(x = Richness, y = ug_chla_cm, color = depth_sa)) +
   geom_point() +
   
   geom_smooth(method = "lm", se = FALSE, color = "black") +
+  
+  #coord_cartesian(ylim = c(0,NA)) +
   
   stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") + # Adds R and p-value
   
  #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3")) +
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "hotpink3")) +
 theme_classic(base_size = 14) +
   theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
-        ) 
+        ) +
+  
+  labs(
+    x = "Metabolite Richness",
+    y = "Chlorophyll a (ug per cm2)"
+  )
 
   
 ```
@@ -349,7 +366,7 @@ ggplot(ocu_fin_div_physio, aes(x = Richness, y = sym_cm2, color = depth_sa)) +
   
  #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3"))
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "hotpink3"))
 ```
 
 ```{r}
@@ -369,7 +386,7 @@ ggplot(ocu_fin_div_physio, aes(x = Entropy, y = chla_pg_sym, color = depth_sa)) 
   
  #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3"))
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "hotpink3"))
 ```
 
 ```{r}
@@ -389,7 +406,7 @@ ggplot(ocu_fin_div_physio, aes(x = Entropy, y = sym_cm2, color = depth_sa)) +
   
  #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "tomato3")) +
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "hotpink3")) +
   theme_classic(base_size = 14) +
   theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
         ) 
