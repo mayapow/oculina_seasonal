@@ -23,7 +23,8 @@ library(ggpubr)
 #install.packages("SIBER")
 library(SIBER)
 
-###Isotopes###
+#================
+#Isotopes
 
 # Function to calculate standard error (SE)
 se_fun <- function(x) {
@@ -269,7 +270,7 @@ ggsave(
   height = 12,
   dpi = 600
 )
-
+#===================
 # Host isotope scatterplot
 # d13C on x-axis, d15N on y-axis
 
@@ -353,25 +354,25 @@ ggsave(
   height = 6,
   dpi = 600
 )
-
-### ella makes ellipses for isoptoes
+#===============
+#SIBER
 
 # check number of samples in each dataset
-nrow(host)
-nrow(algae)
+#nrow(host)
+#nrow(algae)
 
 # check if sample IDs are unique within each dataset
-anyDuplicated(host$sample_id)
-anyDuplicated(algae$sample_id)
+#anyDuplicated(host$sample_id)
+#anyDuplicated(algae$sample_id)
 
 # how many sample IDs occur in both datasets
-length(intersect(host$sample_id, algae$sample_id))
+#length(intersect(host$sample_id, algae$sample_id))
 
 # IDs that occur in host but not algae
-setdiff(host$sample_id, algae$sample_id)
+#setdiff(host$sample_id, algae$sample_id)
 
 # IDs that occur in algae but not host
-setdiff(algae$sample_id, host$sample_id)
+#setdiff(algae$sample_id, host$sample_id)
 
 # Create matching IDs for host and algae samples
 
@@ -495,328 +496,16 @@ combined_CN_plot <- ggplot(
 # Call plot!
 combined_CN_plot
 
-#=======================
-#HOST - SYM iso differences
-
-# Pair host and algae from same sample
-HS_data <- host %>%
-  select(
-    pair_id,
-    depth_sa,
-    d13C_host,
-    d15N_host
-  ) %>%
-  inner_join(
-    algae %>%
-      select(
-        pair_id,
-        d13C_algae,
-        d15N_algae
-      ),
-    by = "pair_id"
-  )
-
-# Calculate H-S
-HS_data <- HS_data %>%
-  mutate(
-    d13C_HS = d13C_host - d13C_algae,
-    d15N_HS = d15N_host - d15N_algae
-  )
-
-# Check the new data
-head(HS_data)
-
-# Check sample sizes for each group
-table(HS_data$depth_sa)
-
-
-# SUMMARY STATS
-
-# d13C H-S
-HS_d13C_summary <- HS_data %>%
-  group_by(depth_sa) %>%
-  summarise(
-    n = sum(!is.na(d13C_HS)),
-    mean = mean(d13C_HS, na.rm = TRUE),
-    se = se_fun(d13C_HS),
-    .groups = "drop"
-  )
-
-HS_d13C_summary
-
-
-# d15N H-S
-HS_d15N_summary <- HS_data %>%
-  group_by(depth_sa) %>%
-  summarise(
-    n = sum(!is.na(d15N_HS)),
-    mean = mean(d15N_HS, na.rm = TRUE),
-    se = se_fun(d15N_HS),
-    .groups = "drop"
-  )
-
-HS_d15N_summary
-
-# d13C H-S JITTER PLOT
-
-HS_d13C_plot <- ggplot() +
-  
-  # Individual samples
-  geom_jitter(
-    data = HS_data,
-    aes(
-      x = depth_sa,
-      y = d13C_HS,
-      color = depth_sa
-    ),
-    width = 0.35,
-    alpha = 0.65,
-    size = 2.5
-  ) +
-  
-  # Mean +/- SE
-  geom_errorbar(
-    data = HS_d13C_summary,
-    aes(
-      x = depth_sa,
-      ymin = mean - se,
-      ymax = mean + se
-    ),
-    width = 0.18,
-    linewidth = 1
-  ) +
-  
-  # Mean
-  geom_point(
-    data = HS_d13C_summary,
-    aes(
-      x = depth_sa,
-      y = mean
-    ),
-    size = 4,
-    color = "black"
-  ) +
-  
-  scale_color_manual(values = depth_cols) +
-  
-  scale_x_discrete(
-    labels = c(
-      "Deep Apo",
-      "Shallow Apo",
-      "Shallow Sym"
-    )
-  ) +
-  
-  theme_bw(base_size = 22) +
-  
-  theme(
-    legend.position = "none",
-    axis.title.x = element_blank(),
-    axis.text.x = element_text(
-      angle = 35,
-      hjust = 1,
-      size = 14
-    ),
-    axis.text.y = element_text(size = 16),
-    axis.title.y = element_text(size = 22),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    plot.margin = margin(10, 15, 10, 15)
-  ) +
-  
-  labs(
-    y = expression(delta^{13}*C[H-S]~("\u2030"))
-  )
-
-HS_d13C_plot
-
-# d15N H-S JITTER PLOT
-
-HS_d15N_plot <- ggplot() +
-  
-  # Individual samples
-  geom_jitter(
-    data = HS_data,
-    aes(
-      x = depth_sa,
-      y = d15N_HS,
-      color = depth_sa
-    ),
-    width = 0.35,
-    alpha = 0.65,
-    size = 2.5
-  ) +
-  
-  # Mean +/- SE
-  geom_errorbar(
-    data = HS_d15N_summary,
-    aes(
-      x = depth_sa,
-      ymin = mean - se,
-      ymax = mean + se
-    ),
-    width = 0.18,
-    linewidth = 1
-  ) +
-  
-  # Mean
-  geom_point(
-    data = HS_d15N_summary,
-    aes(
-      x = depth_sa,
-      y = mean
-    ),
-    size = 4,
-    color = "black"
-  ) +
-  
-  scale_color_manual(values = depth_cols) +
-  
-  scale_x_discrete(
-    labels = c(
-      "Deep Apo",
-      "Shallow Apo",
-      "Shallow Sym"
-    )
-  ) +
-  
-  theme_bw(base_size = 22) +
-  
-  theme(
-    legend.position = "none",
-    axis.title.x = element_blank(),
-    axis.text.x = element_text(
-      angle = 35,
-      hjust = 1,
-      size = 14
-    ),
-    axis.text.y = element_text(size = 16),
-    axis.title.y = element_text(size = 22),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    plot.margin = margin(10, 15, 10, 15)
-  ) +
-  
-  labs(
-    y = expression(delta^{15}*N[H-S]~("\u2030"))
-  )
-
-HS_d15N_plot
-
-#letters
-HS_d13C_letters <- data.frame(
-  depth_sa = factor(
-    c("Deep Aposymbiotic",
-      "Shallow Aposymbiotic",
-      "Shallow Symbiotic"),
-    levels = levels(HS_data$depth_sa)
-  ),
-  letter = c("a", "a", "a")
-)
-
-HS_d13C_plot <- HS_d13C_plot +
-  geom_text(
-    data = HS_d13C_letters,
-    aes(x = depth_sa, y = Inf, label = letter),
-    vjust = 1.5,
-    size = 7,
-    fontface = "bold",
-    inherit.aes = FALSE
-  ) +
-  coord_cartesian(clip = "off")
-
-HS_d15N_letters <- data.frame(
-  depth_sa = factor(
-    c("Deep Aposymbiotic",
-      "Shallow Aposymbiotic",
-      "Shallow Symbiotic"),
-    levels = levels(HS_data$depth_sa)
-  ),
-  letter = c("a", "a", "b")
-)
-
-HS_d15N_plot <- HS_d15N_plot +
-  geom_text(
-    data = HS_d15N_letters,
-    aes(x = depth_sa, y = Inf, label = letter),
-    vjust = 1.5,
-    size = 7,
-    fontface = "bold",
-    inherit.aes = FALSE
-  ) +
-  coord_cartesian(clip = "off")
-
-HS_plots <- ggarrange(
-  HS_d13C_plot,
-  HS_d15N_plot,
-  ncol = 2,
-  nrow = 1,
-  labels = c("A", "B")
-)
-
-HS_plots
-
+#save plot
 ggsave(
-  here("Output", "Nov_2024", "host_minus_symbiont_isotopes.png"),
-  plot = HS_plots,
-  width = 12,
-  height = 6
+  filename = here("Output", "Nov_2024", "isotopes",
+                  "host_algae_CN_ellipses.jpg"),
+  plot = combined_CN_plot,
+  width = 18,
+  height = 12,
+  dpi = 600,
 )
 
-# PUT BOTH H-S PLOTS TOGETHER
-
-HS_plots <- ggarrange(
-  HS_d13C_plot,
-  HS_d15N_plot,
-  ncol = 2,
-  nrow = 1,
-  labels = c("A", "B")
-)
-
-HS_plots
-
-# SAVE FIGURE
-
-ggsave(
-  here(
-    "Output",
-    "Nov_2024",
-    "host_minus_symbiont_isotopes.pdf"
-  ),
-  HS_plots,
-  width = 12,
-  height = 6,
-  dpi = 600
-)
-
-# ANOVA: HOST - SYMBIONT 
-
-# d13C H-S
-
-HS_d13C_aov <- aov(
-  d13C_HS ~ depth_sa,
-  data = HS_data
-)
-
-# Overall ANOVA
-summary(HS_d13C_aov)
-
-# Pairwise comparisons
-TukeyHSD(HS_d13C_aov)
-
-#------------------------------------------------------------
-# d15N H-S
-
-HS_d15N_aov <- aov(
-  d15N_HS ~ depth_sa,
-  data = HS_data
-)
-
-# Overall ANOVA
-summary(HS_d15N_aov)
-
-# Pairwise comparisons
-TukeyHSD(HS_d15N_aov)
 #======================
 # H + S
 # Match host and symbiont samples
@@ -1023,17 +712,224 @@ HplusS_d15N_plot <- HplusS_d15N_plot +
     y = max(HplusS_d15N_letters$y) + 0.3
   )
 
+# ============================================================
+# COMBINE H + S PLOTS AFTER ADDING SIGNIFICANCE LETTERS
+
+HplusS_plots <- ggarrange(
+  HplusS_d13C_plot,
+  HplusS_d15N_plot,
+  ncol = 2,
+  nrow = 1,
+  labels = c("A", "B")
+)
+
+# Display updated plots
+HplusS_plots
+
+# SAVE H + S PLOTS
+
+# Create folder if needed
+dir.create(
+  here("Output", "Nov_2024", "isotopes", "H+S"),
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
 ggsave(
-  here("Output", "Nov_2024",
-       "host_plus_symbiont_isotopes.png"),
+  filename = here(
+    "Output", "Nov_2024", "isotopes", "H+S",
+    "host_plus_symbiont_isotopes.jpg"
+  ),
   plot = HplusS_plots,
   width = 12,
   height = 6,
-  dpi = 600,
-  device = function(...)
-    grDevices::png(..., type = "quartz")
+  dpi = 600
 )
 
+# ============================================================
+# HOST - SYMBIONT (H-S) ISOTOPE PLOTS
+
+# Summary statistics
+HS_summary <- HS_data %>%
+  group_by(depth_sa) %>%
+  summarise(
+    n_d13C = sum(!is.na(d13C_HS)),
+    mean_d13C = mean(d13C_HS, na.rm = TRUE),
+    se_d13C = se_fun(d13C_HS),
+    
+    n_d15N = sum(!is.na(d15N_HS)),
+    mean_d15N = mean(d15N_HS, na.rm = TRUE),
+    se_d15N = se_fun(d15N_HS),
+    
+    .groups = "drop"
+  )
+
+# CARBON H-S PLOT
+
+HS_d13C_plot <- ggplot() +
+  geom_jitter(
+    data = HS_data,
+    aes(x = depth_sa, y = d13C_HS,
+        color = depth_sa),
+    width = 0.35,
+    alpha = 0.65,
+    size = 2.5
+  ) +
+  geom_errorbar(
+    data = HS_summary,
+    aes(x = depth_sa,
+        ymin = mean_d13C - se_d13C,
+        ymax = mean_d13C + se_d13C),
+    width = 0.18,
+    linewidth = 1
+  ) +
+  geom_point(
+    data = HS_summary,
+    aes(x = depth_sa, y = mean_d13C),
+    size = 4,
+    color = "black"
+  ) +
+  scale_color_manual(values = depth_cols) +
+  scale_x_discrete(
+    labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")
+  ) +
+  labs(
+    x = NULL,
+    y = expression(delta^{13}*C~"(H - S)")
+  ) +
+  theme_bw(base_size = 22) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 35, hjust = 1, size = 14
+    ),
+    axis.text.y = element_text(size = 16),
+    axis.title.y = element_text(size = 22),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+
+# NITROGEN H-S PLOT
+
+HS_d15N_plot <- ggplot() +
+  geom_jitter(
+    data = HS_data,
+    aes(x = depth_sa, y = d15N_HS,
+        color = depth_sa),
+    width = 0.35,
+    alpha = 0.65,
+    size = 2.5
+  ) +
+  geom_errorbar(
+    data = HS_summary,
+    aes(x = depth_sa,
+        ymin = mean_d15N - se_d15N,
+        ymax = mean_d15N + se_d15N),
+    width = 0.18,
+    linewidth = 1
+  ) +
+  geom_point(
+    data = HS_summary,
+    aes(x = depth_sa, y = mean_d15N),
+    size = 4,
+    color = "black"
+  ) +
+  scale_color_manual(values = depth_cols) +
+  scale_x_discrete(
+    labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")
+  ) +
+  labs(
+    x = NULL,
+    y = expression(delta^{15}*N~"(H - S)")
+  ) +
+  theme_bw(base_size = 22) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 35, hjust = 1, size = 14
+    ),
+    axis.text.y = element_text(size = 16),
+    axis.title.y = element_text(size = 22),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+
+
+# SIGNIFICANCE LETTERS FOR H-S
+
+# Carbon significance letters
+HS_d13C_letters <- HS_data %>%
+  group_by(depth_sa) %>%
+  summarise(
+    y = max(d13C_HS, na.rm = TRUE) + 0.3,
+    .groups = "drop"
+  ) %>%
+  mutate(letter = "a")
+
+HS_d13C_plot <- HS_d13C_plot +
+  geom_text(
+    data = HS_d13C_letters,
+    aes(x = depth_sa, y = y, label = letter),
+    size = 7,
+    fontface = "bold",
+    inherit.aes = FALSE
+  ) +
+  expand_limits(
+    y = max(HS_d13C_letters$y) + 0.3
+  )
+
+
+# Nitrogen significance letters
+HS_d15N_letters <- HS_data %>%
+  group_by(depth_sa) %>%
+  summarise(
+    y = max(d15N_HS, na.rm = TRUE) + 0.3,
+    .groups = "drop"
+  ) %>%
+  mutate(
+    letter = case_when(
+      depth_sa == "Shallow Symbiotic" ~ "b",
+      TRUE ~ "a"
+    )
+  )
+
+HS_d15N_plot <- HS_d15N_plot +
+  geom_text(
+    data = HS_d15N_letters,
+    aes(x = depth_sa, y = y, label = letter),
+    size = 7,
+    fontface = "bold",
+    inherit.aes = FALSE
+  ) +
+  expand_limits(
+    y = max(HS_d15N_letters$y) + 0.3
+  )
+
+# COMBINE PLOTS AFTER ADDING SIGNIFICANCE LETTERS
+
+HS_plots <- ggarrange(
+  HS_d13C_plot,
+  HS_d15N_plot,
+  ncol = 2,
+  nrow = 1,
+  labels = c("A", "B")
+)
+
+# Display combined figure
+HS_plots
+
+# SAVE H-S FIGURE
+
+ggsave(
+  filename = here(
+    "Output", "Nov_2024", "isotopes", "H-S",
+    "host_minus_symbiont_isotopes.jpg"
+  ),
+  plot = HS_plots,
+  width = 12,
+  height = 6,
+  dpi = 600
+)
 #============================================================
 # SIBER ANALYSIS - NOVEMBER 2024 OCULINA
 # HOST AND ALGAE
@@ -1537,10 +1433,125 @@ ggsave(
   device = function(...) grDevices::png(..., type = "quartz")
 )
 
+# ============================================================
+# SEPARATE HOST + ALGAE ISOTOPE PLOTS BY TREATMENT
+# ============================================================
+
+# Function to make the same plot for each treatment
+make_isotope_plot <- function(group_name) {
+  
+  group_data <- isotope_combined %>%
+    filter(depth_sa == group_name)
+  
+  ggplot(
+    group_data,
+    aes(x = d13C, y = d15N, color = tissue)
+  ) +
+    
+    # Individual isotope measurements
+    geom_point(
+      aes(shape = tissue),
+      size = 3.5,
+      alpha = 0.75
+    ) +
+    
+    # Separate 95% ellipses for Host and Algae
+    stat_ellipse(
+      aes(group = tissue),
+      type = "norm",
+      level = 0.95,
+      linewidth = 1.2
+    ) +
+    
+    # Colors and shapes
+    scale_color_manual(values = tissue_cols) +
+    scale_shape_manual(
+      values = c("Host" = 16, "Algae" = 17)
+    ) +
+    
+    # Same axis limits for all three plots
+    coord_cartesian(
+      xlim = range(isotope_combined$d13C, na.rm = TRUE) + c(-0.5, 0.5),
+      ylim = range(isotope_combined$d15N, na.rm = TRUE) + c(-0.5, 0.5)
+    ) +
+    
+    # Labels
+    labs(
+      title = group_name,
+      x = expression(delta^{13}*C~("\u2030 VPDB")),
+      y = expression(delta^{15}*N~("\u2030 Air")),
+      color = "Tissue",
+      shape = "Tissue"
+    ) +
+    
+    # Formatting
+    theme_bw(base_size = 20) +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      plot.title = element_text(
+        size = 22,
+        face = "bold",
+        hjust = 0.5
+      ),
+      axis.title = element_text(size = 20),
+      axis.text = element_text(size = 14),
+      legend.position = "right"
+    )
+}
+
+
+# CREATE THREE SEPARATE PLOTS
+
+deep_apo_CN_plot <- make_isotope_plot("Deep Aposymbiotic")
+
+shallow_apo_CN_plot <- make_isotope_plot("Shallow Aposymbiotic")
+
+shallow_sym_CN_plot <- make_isotope_plot("Shallow Symbiotic")
+
+
+# Display plots
+deep_apo_CN_plot
+shallow_apo_CN_plot
+shallow_sym_CN_plot
+
+# ============================================================
+# SAVE SEPARATE ISOTOPE PLOTS
+# ============================================================
+
+output_dir <- here("Output", "Nov_2024", "isotopes")
+
+ggsave(
+  filename = file.path(output_dir, "deep_apo_CN.jpg"),
+  plot = deep_apo_CN_plot,
+  width = 8,
+  height = 7,
+  dpi = 600,
+)
+
+ggsave(
+  filename = file.path(output_dir, "shallow_apo_CN.jpg"),
+  plot = shallow_apo_CN_plot,
+  width = 8,
+  height = 7,
+  dpi = 600,
+)
+
+ggsave(
+  filename = file.path(output_dir, "shallow_sym_CN.jpg"),
+  plot = shallow_sym_CN_plot,
+  width = 8,
+  height = 7,
+  dpi = 600,
+)
+#============
+#SIBER statistics
 
 
 
-#####Ash Free Dry Weight#####
+
+
+#======Ash Free Dry Weight ========
 
 #read in metadata
 phys_meta <- read.csv(here("Data", "Nov_2024", "oculina_nov24_chla.csv"))
@@ -1671,7 +1682,8 @@ chla_time_box <- ggplot(sym_chla, aes(x = timepoint, y = ug_chla_cm, fill = time
 
 chla_time_box
 
-##Ginormous 3 panel plot -- sym density, chla/cm2, chla/symbiont
+#========
+#3 panel plot w sym density, chla/cm2, chla/symbiont
 
 library(dplyr)
 library(ggplot2)
@@ -1775,7 +1787,7 @@ TukeyHSD(chla_sym_aov)
 #   group_by(sym_apo) %>%
 #   identify_outliers(chla_sym)
 # chla_sym_out
-
+#============
 
 ###PLOTS###
 #USING FOR 395
