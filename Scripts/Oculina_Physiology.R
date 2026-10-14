@@ -934,9 +934,7 @@ ggsave(
 # SIBER ANALYSIS - NOVEMBER 2024 OCULINA
 # HOST AND ALGAE
 
-library(SIBER)
-library(dplyr)
-library(tidyr)
+#library(tidyr)
 
 # HOST
 # Format host data for SIBER
@@ -1100,166 +1098,8 @@ host_overlap_proportions <- data.frame(
 
 host_overlap_proportions
 
-#============================================================
-# ALGAE
-# Format algae data for SIBER
-
-algae_siber <- algae %>%
-  transmute(
-    iso1 = d13C_algae,
-    iso2 = d15N_algae,
-    group = case_when(
-      depth_sa == "Deep Aposymbiotic" ~ 1,
-      depth_sa == "Shallow Aposymbiotic" ~ 2,
-      depth_sa == "Shallow Symbiotic" ~ 3
-    ),
-    community = 1
-  ) %>%
-  drop_na(iso1, iso2, group)
-
-
-# Create SIBER object
-
-algae_siber_object <- createSiberObject(algae_siber)
-
-
-# Check sample sizes
-
-algae_siber_object[["sample.sizes"]]
-
-# ALGAE PLOT
-
-plotSiberObject(
-  algae_siber_object,
-  ax.pad = 2,
-  hulls = FALSE,
-  community.hulls.args = community.hulls.args,
-  ellipses = TRUE,
-  group.ellipses.args = group.ellipses.args,
-  group.hulls = FALSE,
-  group.hulls.args = group.hulls.args,
-  bty = "L",
-  iso.order = c(1,2),
-  xlab = expression(delta^{13}*C~("\u2030")),
-  ylab = expression(delta^{15}*N~("\u2030"))
-)
-
-# ALGAE TA, SEA, SEAc
-
-algae_metrics <- groupMetricsML(algae_siber_object)
-
-algae_metrics
-
-
-# Make readable table
-
-algae_metrics_named <- data.frame(
-  
-  Group = c(
-    "Deep Aposymbiotic",
-    "Shallow Aposymbiotic",
-    "Shallow Symbiotic"
-  ),
-  
-  TA = c(
-    algae_metrics["TA", "1.1"],
-    algae_metrics["TA", "1.2"],
-    algae_metrics["TA", "1.3"]
-  ),
-  
-  SEA = c(
-    algae_metrics["SEA", "1.1"],
-    algae_metrics["SEA", "1.2"],
-    algae_metrics["SEA", "1.3"]
-  ),
-  
-  SEAc = c(
-    algae_metrics["SEAc", "1.1"],
-    algae_metrics["SEAc", "1.2"],
-    algae_metrics["SEAc", "1.3"]
-  )
-)
-
-algae_metrics_named
-
-# ALGAE ELLIPSE OVERLAP
-# Deep Apo vs Shallow Apo
-
-algae_deep_vs_shallow_apo <- maxLikOverlap(
-  "1.1",
-  "1.2",
-  algae_siber_object,
-  p.interval = 0.95,
-  n = 100
-)
-
-algae_deep_vs_shallow_apo
-
-
-# Deep Apo vs Shallow Sym
-algae_deep_vs_shallow_sym <- maxLikOverlap(
-  "1.1",
-  "1.3",
-  algae_siber_object,
-  p.interval = 0.95,
-  n = 100
-)
-
-algae_deep_vs_shallow_sym
-
-
-# Shallow Apo vs Shallow Sym
-algae_shallow_apo_vs_sym <- maxLikOverlap(
-  "1.2",
-  "1.3",
-  algae_siber_object,
-  p.interval = 0.95,
-  n = 100
-)
-
-algae_shallow_apo_vs_sym
-
-
-# Calculate proportional overlap
-
-algae_overlap_proportions <- data.frame(
-  
-  Comparison = c(
-    "Deep Apo vs Shallow Apo",
-    "Deep Apo vs Shallow Sym",
-    "Shallow Apo vs Shallow Sym"
-  ),
-  
-  Proportional_Overlap = c(
-    
-    algae_deep_vs_shallow_apo[3] /
-      (algae_deep_vs_shallow_apo[1] +
-         algae_deep_vs_shallow_apo[2] -
-         algae_deep_vs_shallow_apo[3]),
-    
-    algae_deep_vs_shallow_sym[3] /
-      (algae_deep_vs_shallow_sym[1] +
-         algae_deep_vs_shallow_sym[2] -
-         algae_deep_vs_shallow_sym[3]),
-    
-    algae_shallow_apo_vs_sym[3] /
-      (algae_shallow_apo_vs_sym[1] +
-         algae_shallow_apo_vs_sym[2] -
-         algae_shallow_apo_vs_sym[3])
-  )
-)
-
-algae_overlap_proportions
-
-# FINAL RESULTS
-
-host_metrics_named
-host_overlap_proportions
-
-algae_metrics_named
-algae_overlap_proportions
-
-#ISOTOPE ELLIPSE PLOTS
+#===========================================================
+#ISOTOPE SIBER PLOTS
 
 library(ggplot2)
 library(dplyr)
@@ -1340,38 +1180,31 @@ algae_siber_plot <- ggplot(
   aes(
     x = d13C_algae,
     y = d15N_algae,
-    color = depth_sa
-  )
-) +
+    color = depth_sa)) +
   
   # Individual samples
   geom_point(
     size = 3,
-    alpha = 0.7
-  ) +
+    alpha = 0.7) +
   
   # 95% ellipses
   stat_ellipse(
     aes(
       group = depth_sa,
-      color = depth_sa
-    ),
+      color = depth_sa),
     type = "norm",
     level = 0.95,
-    linewidth = 1.2
-  ) +
+    linewidth = 1.2) +
   
   # Group colors
   scale_color_manual(
     values = depth_cols,
-    name = NULL
-  ) +
+    name = NULL) +
   
-  # Axis labels???
+  # Axis labels
   labs(
     x = expression(delta^{13}*C~"(\u2030 VPDB)"),
-    y = expression(delta^{15}*N~"(\u2030 Air)")
-  ) +
+    y = expression(delta^{15}*N~"(\u2030 Air)")) +
   
   # Clean formatting
   theme_classic(base_size = 18) +
@@ -1380,23 +1213,18 @@ algae_siber_plot <- ggplot(
     plot.title = element_text(
       size = 20,
       face = "bold",
-      hjust = 0.5
-    ),
+      hjust = 0.5),
     
     axis.title = element_text(
-      size = 18
-    ),
+      size = 18),
     
     axis.text = element_text(
-      size = 14
-    ),
+      size = 14),
     
     legend.text = element_text(
-      size = 14
-    ),
+      size = 14),
     
-    legend.position = "right"
-  )
+    legend.position = "right")
 
 
 # Show algae plot
@@ -1435,7 +1263,6 @@ ggsave(
 
 # ============================================================
 # SEPARATE HOST + ALGAE ISOTOPE PLOTS BY TREATMENT
-# ============================================================
 
 # Function to make the same plot for each treatment
 make_isotope_plot <- function(group_name) {
@@ -1517,7 +1344,6 @@ shallow_sym_CN_plot
 
 # ============================================================
 # SAVE SEPARATE ISOTOPE PLOTS
-# ============================================================
 
 output_dir <- here("Output", "Nov_2024", "isotopes")
 
@@ -1545,10 +1371,80 @@ ggsave(
   dpi = 600,
 )
 #============
-#SIBER statistics
+# SIGNIFICANCE TESTS, HOST VS ALGAE BY TREATMENT
+
+#library(dplyr)
+
+# Match host and algae samples
+paired_isotopes <- host %>%
+  select(pair_id, depth_sa, d13C_host, d15N_host) %>%
+  inner_join(
+    algae %>%
+      select(pair_id, d13C_algae, d15N_algae),
+    by = "pair_id"
+  )
+
+# ============================================================
+# DEEP APOSYMBIOTIC
+
+deep_apo <- paired_isotopes %>%
+  filter(depth_sa == "Deep Aposymbiotic")
+
+# Carbon
+t.test(
+  deep_apo$d13C_host,
+  deep_apo$d13C_algae,
+  paired = TRUE
+)
+
+# Nitrogen
+t.test(
+  deep_apo$d15N_host,
+  deep_apo$d15N_algae,
+  paired = TRUE
+)
 
 
+# ============================================================
+# SHALLOW APOSYMBIOTIC
 
+shallow_apo <- paired_isotopes %>%
+  filter(depth_sa == "Shallow Aposymbiotic")
+
+# Carbon
+t.test(
+  shallow_apo$d13C_host,
+  shallow_apo$d13C_algae,
+  paired = TRUE
+)
+
+# Nitrogen
+t.test(
+  shallow_apo$d15N_host,
+  shallow_apo$d15N_algae,
+  paired = TRUE
+)
+
+
+# ============================================================
+# SHALLOW SYMBIOTIC
+
+shallow_sym <- paired_isotopes %>%
+  filter(depth_sa == "Shallow Symbiotic")
+
+# Carbon
+t.test(
+  shallow_sym$d13C_host,
+  shallow_sym$d13C_algae,
+  paired = TRUE
+)
+
+# Nitrogen
+t.test(
+  shallow_sym$d15N_host,
+  shallow_sym$d15N_algae,
+  paired = TRUE
+)
 
 
 #======Ash Free Dry Weight ========
@@ -1617,13 +1513,13 @@ summary(DW.mod.stress)
 
 ##### read in Chlorophyll a NOV 24#####
 
-#sym_chla <- read.csv(here("Data", "Nov_2024", "oculina_nov24_chla.csv"))
-#meta <- read.csv(here("Data", "Nov_2024", "oculina_nov24_metadata.csv"))
+sym_chla <- read.csv(here("Data", "Nov_2024", "oculina_nov24_chla.csv"))
+meta <- read.csv(here("Data", "Nov_2024", "oculina_nov24_metadata.csv"))
 
 #remove samples that have no data
-#sym_chla <- sym_chla %>% 
-#  left_join(meta, by = "sample_ID")
-#sym_chla <- sym_chla %>% filter(full_ID != "A12-1124") 
+sym_chla <- sym_chla %>% 
+  left_join(meta, by = "sample_ID")
+sym_chla <- sym_chla %>% filter(full_ID != "A12-1124") 
 
 #checks do see if data is still in sample set
 sym_chla %>% 
@@ -1635,8 +1531,6 @@ sapply(sym_chla, class)
 
 #convert any variables to correct classes as needed - see example here
 sym_chla <- sym_chla %>% mutate_at(c('ug_chla_cm'), as.numeric)
-
-
 
 #########
 
