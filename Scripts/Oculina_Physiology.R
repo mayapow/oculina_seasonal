@@ -24,7 +24,7 @@ library(ggpubr)
 library(SIBER)
 
 #===Isotopes, 4 plots: Host C and N, Algae C and N====
-
+#organizing data
 # function to calculate standard error (SE)
 se_fun <- function(x) {
   n <- sum(!is.na(x)) 
@@ -51,7 +51,7 @@ depth_cols <- c(
   "Shallow Symbiotic" = "navy"
 )
 
-#===HOST d13C PLOT====
+#===HOST d13C by depth/sym or apo PLOT====
 host_summary <- host %>%
   #separates corals into groups
   group_by(depth_sa) %>%
@@ -109,7 +109,7 @@ host_d13C_plot <- ggplot() +
   #labels y axis
   labs(y = expression(delta^{13}*C~("\u2030")))
 
-#===ALGAE d13C PLOT====
+#===ALGAE d13C depth/sym or apo PLOT====
 algae_summary <- algae %>%
   group_by(depth_sa) %>%
   summarise(
@@ -155,7 +155,7 @@ algae_d13C_plot <- ggplot() +
   ) +
   labs(y = expression(delta^{13}*C~("\u2030")))
 
-#===HOST d15N PLOT====
+#===HOST d15N depth/sym or apo PLOT====
 host_summary <- host %>%
   group_by(depth_sa) %>%
   summarise(
@@ -201,7 +201,7 @@ host_d15N_plot <- ggplot() +
   ) +
   labs(y = expression(delta^{15}*N~("\u2030")))
 
-#===ALGAE d15N PLOT====
+#===ALGAE d15N depth/sym or apo PLOT====
 algae_summary <- algae %>%
   group_by(depth_sa) %>%
   summarise(
@@ -269,9 +269,7 @@ ggsave(
   height = 12,
   dpi = 600
 )
-#===15N / 13C Isotope scatterplots====
-
-#===Host isotope scatterplot====
+#===Host 15N/13C isotope scatterplot====
 
 #create scatterplot
 host_CN_plot <- ggplot(host,
@@ -304,7 +302,7 @@ ggsave(
   height = 6,
   dpi = 600)
 
-#===Algae isotope scatterplot====
+#===Algae 15N/13C isotope scatterplot====
 algae_CN_plot <- ggplot(
   algae,
   aes(x = d13C_algae,y = d15N_algae,color = depth_sa)) +
@@ -447,6 +445,18 @@ ggsave(
 
 #===SEPARATE HOST + ALGAE ISOTOPE PLOTS BY TREATMENT====
 
+isotope_combined <- bind_rows(
+  host %>%
+    transmute(depth_sa,d13C = d13C_host,d15N = d15N_host,tissue = "Host"),
+  algae %>%
+    transmute(depth_sa,d13C = d13C_algae,d15N = d15N_algae,tissue = "Algae"))
+
+# Colors for host and algae
+tissue_cols <- c(
+  "Host" = "navy",
+  "Algae" = "hotpink2")
+
+
 # Function to make the same plot for each treatment
 make_isotope_plot <- function(group_name) {
   group_data <- isotope_combined %>%
@@ -535,6 +545,9 @@ ggsave(
 )
 #===SIGNIFICANCE TESTS, HOST VS ALGAE BY TREATMENT====
 
+#SEAc
+
+
 # DEEP APOSYMBIOTIC
 
 deep_apo <- paired_isotopes %>%
@@ -553,7 +566,6 @@ t.test(
   deep_apo$d15N_algae,
   paired = TRUE
 )
-
 
 # ============================================================
 # SHALLOW APOSYMBIOTIC
