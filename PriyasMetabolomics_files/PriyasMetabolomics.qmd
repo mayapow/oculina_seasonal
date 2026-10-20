@@ -375,7 +375,7 @@ ggplot(sig_feat_phen_plot,
 rfpermute regression by chlorophyll **on oculina_final:**:
 
 ```{r}
-rfp_chlor <- rfPermute(chla ~., data = num_df_final_chla, na.action = na.omit, ntree = 500, num.rep = 100)
+rfp_chlor <- rfPermute(chla ~., data = num_df_final_chla, na.action = na.omit, ntree = 1000, num.rep = 200)
 
 rfp_chlor
 
@@ -517,6 +517,23 @@ geom_text(data = letters_df_microcystin, aes(x = group, y = Inf, label = letter,
 ```
 
 ```{r}
-oculina_apo <- ocu_final |>
-  filter(bleaching == "B")
+#oculina_apo <- ocu_final[, c(40:16426)] |>
+  #filter(bleaching == "B") 
+oculina_apo <- oculina_apo[, colSums(oculina_apo != 0, na.rm = TRUE) > 0]
+  
+
+#oculina_sym <- ocu_final[, c(40:16426)] |>
+  #filter(bleaching == "NB")
+oculina_sym <- oculina_sym[, colSums(oculina_sym != 0, na.rm = TRUE) > 0]
+  
+```
+
+```{r}
+ocu_apo_feats <- list(colnames(oculina_apo[, c(40:14682)]))
+ocu_sym_feats <- list(colnames(oculina_sym[, c(40:15360)]))
+```
+
+```{r}
+
+shared_feats_apo_sym <- intersect(unlist(ocu_apo_feats), unlist(ocu_sym_feats))
 ```
