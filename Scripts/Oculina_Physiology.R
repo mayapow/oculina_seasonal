@@ -52,7 +52,7 @@ depth_cols <- c(
 )
 
 #===HOST d13C by depth/sym or apo PLOT====
-host_summary <- host %>%
+host_d13C_summary <- host %>%
   #separates corals into groups
   group_by(depth_sa) %>%
   summarise(
@@ -76,14 +76,14 @@ host_d13C_plot <- ggplot() +
   ) +
   #adds errorbar
   geom_errorbar(
-    data = host_summary,
+    data = host_d13C_summary,
     aes(x = depth_sa, ymin = mean - se, ymax = mean + se),
     width = 0.18,
     linewidth = 1
   ) +
   #adds average for each treatment, middle of errorbar
   geom_point(
-    data = host_summary,
+    data = host_d13C_summary,
     aes(x = depth_sa, y = mean),
     size = 4,
     color = "black"
@@ -93,7 +93,7 @@ host_d13C_plot <- ggplot() +
   #shortens treatment names
   scale_x_discrete(labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")) +
   # sets y axis limits
-  coord_cartesian(ylim = c(-25, -10)) +
+  coord_cartesian(ylim = c(-24, -19), expand = false, clip = "off") +
   # sets theme of graph & font size
   theme_bw(base_size = 22) +
   theme(
@@ -109,8 +109,10 @@ host_d13C_plot <- ggplot() +
   #labels y axis
   labs(y = expression(delta^{13}*C~("\u2030")))
 
+host_d13C_plot
+
 #===ALGAE d13C depth/sym or apo PLOT====
-algae_summary <- algae %>%
+algae_d13C_summary <- algae %>%
   group_by(depth_sa) %>%
   summarise(
     n = sum(!is.na(d13C_algae)),
@@ -128,20 +130,20 @@ algae_d13C_plot <- ggplot() +
     size = 2.5
   ) +
   geom_errorbar(
-    data = algae_summary,
+    data = algae_d13C_summary,
     aes(x = depth_sa, ymin = mean - se, ymax = mean + se),
     width = 0.18,
     linewidth = 1
   ) +
   geom_point(
-    data = algae_summary,
+    data = algae_d13C_summary,
     aes(x = depth_sa, y = mean),
     size = 4,
     color = "black"
   ) +
   scale_color_manual(values = depth_cols) +
   scale_x_discrete(labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")) +
-  coord_cartesian(ylim = c(-25, -10)) +
+  coord_cartesian(ylim = c(-24, -19), expand = FALSE, clip = "off") +
   theme_bw(base_size = 22) +
   theme(
     legend.position = "none",
@@ -155,8 +157,10 @@ algae_d13C_plot <- ggplot() +
   ) +
   labs(y = expression(delta^{13}*C~("\u2030")))
 
+algae_d13C_plot
+
 #===HOST d15N depth/sym or apo PLOT====
-host_summary <- host %>%
+host_d15N_summary <- host %>%
   group_by(depth_sa) %>%
   summarise(
     n = sum(!is.na(d15N_host)),
@@ -174,20 +178,20 @@ host_d15N_plot <- ggplot() +
     size = 2.5
   ) +
   geom_errorbar(
-    data = host_summary,
+    data = host_d15N_summary,
     aes(x = depth_sa, ymin = mean - se, ymax = mean + se),
     width = 0.18,
     linewidth = 1
   ) +
   geom_point(
-    data = host_summary,
+    data = host_d15N_summary,
     aes(x = depth_sa, y = mean),
     size = 4,
     color = "black"
   ) +
   scale_color_manual(values = depth_cols) +
   scale_x_discrete(labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")) +
-  coord_cartesian(ylim = c(0, 10.5)) +
+  coord_cartesian(ylim = c(4, 12.5), expand = FALSE, clip = "off") +
   theme_bw(base_size = 22) +
   theme(
     legend.position = "none",
@@ -202,7 +206,7 @@ host_d15N_plot <- ggplot() +
   labs(y = expression(delta^{15}*N~("\u2030")))
 
 #===ALGAE d15N depth/sym or apo PLOT====
-algae_summary <- algae %>%
+algae_d15N_summary <- algae %>%
   group_by(depth_sa) %>%
   summarise(
     n = sum(!is.na(d15N_algae)),
@@ -220,20 +224,20 @@ algae_d15N_plot <- ggplot() +
     size = 2.5
   ) +
   geom_errorbar(
-    data = algae_summary,
+    data = algae_d15N_summary,
     aes(x = depth_sa, ymin = mean - se, ymax = mean + se),
     width = 0.18,
     linewidth = 1
   ) +
   geom_point(
-    data = algae_summary,
+    data = algae_d15N_summary,
     aes(x = depth_sa, y = mean),
     size = 4,
     color = "black"
   ) +
   scale_color_manual(values = depth_cols) +
   scale_x_discrete(labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")) +
-  coord_cartesian(ylim = c(0, 10.5)) +
+  coord_cartesian(ylim = c(4, 12.5), expand = FALSE, clip = "off") +
   theme_bw(base_size = 22) +
   theme(
     legend.position = "none",
@@ -246,6 +250,107 @@ algae_d15N_plot <- ggplot() +
     plot.margin = margin(10, 15, 10, 15)
   ) +
   labs(y = expression(delta^{15}*N~("\u2030")))
+
+
+#===ANOVA + TUKEY SIGNIFICANCE LETTERS====
+
+#install.packages("multcompView")
+#library(multcompView)
+
+# Function to calculate significance letters
+get_letters <- function(data, isotope_column) {
+  
+  # run ANOVA
+  model <- aov(
+    as.formula(paste(isotope_column, "~ depth_sa")),
+    data = data
+  )
+  
+  # Show ANOVA and Tukey results
+  print(summary(model))
+  print(TukeyHSD(model))
+  
+  # Convert Tukey comparisons into letters
+  letters <- multcompLetters4(model, TukeyHSD(model))
+  
+  data.frame(
+    depth_sa = names(letters$depth_sa$Letters),
+    letter = letters$depth_sa$Letters
+  )
+}
+
+# Calculate letters
+host_d13C_letters <- get_letters(host, "d13C_host")
+
+algae_d13C_letters <- get_letters(algae, "d13C_algae")
+
+host_d15N_letters <- get_letters(host, "d15N_host")
+
+algae_d15N_letters <- get_letters(algae, "d15N_algae")
+
+
+#===ADD SIGNIFICANCE LETTERS TO PLOTS====
+
+# Function to position letters above each treatment
+add_letters <- function(plot, data, summary_data,
+                        isotope_column, letters_data) {
+  
+  positions <- data %>%
+    group_by(depth_sa) %>%
+    summarise(
+      highest_point = max(.data[[isotope_column]], na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    left_join(
+      summary_data %>%
+        select(depth_sa, mean, se),
+      by = "depth_sa"
+    ) %>%
+    mutate(
+      top = pmax(highest_point, mean + se)
+    ) %>%
+    left_join(letters_data, by = "depth_sa")
+  
+  # Add a small vertical gap
+  gap <- diff(range(data[[isotope_column]], na.rm = TRUE)) * 0.06
+  
+  positions <- positions %>%
+    mutate(y_position = top + gap)
+  
+  plot +
+    geom_text(
+      data = positions,
+      aes(x = depth_sa, y = y_position, label = letter),
+      inherit.aes = FALSE,
+      size = 7,
+      fontface = "bold"
+    ) +
+}
+
+# Host carbon
+host_d13C_plot <- add_letters(
+  host_d13C_plot, host, host_d13C_summary,
+  "d13C_host", host_d13C_letters
+)
+
+# Algae carbon
+algae_d13C_plot <- add_letters(
+  algae_d13C_plot, algae, algae_d13C_summary,
+  "d13C_algae", algae_d13C_letters
+)
+
+# Host nitrogen
+host_d15N_plot <- add_letters(
+  host_d15N_plot, host, host_d15N_summary,
+  "d15N_host", host_d15N_letters
+)
+
+# Algae nitrogen
+algae_d15N_plot <- add_letters(
+  algae_d15N_plot, algae, algae_d15N_summary,
+  "d15N_algae", algae_d15N_letters
+)
+
 
 #=== Combine into one four-panel!====
 library(grid)
@@ -263,12 +368,16 @@ final_plot
 
 # Save larger so points and labels are visible
 ggsave(
-  here("Output", "Nov_2024", "isotope_four_panel_plot.pdf"),
-  iso_plots,
+  here("Output", "Nov_2024","isotopes","isotope_four_panel_plot.jpg"),
+  final_plot,
   width = 18,
   height = 12,
   dpi = 600
 )
+
+sapply(list(host_C = host_d13C_plot, algae_C = algae_d13C_plot,
+            host_N = host_d15N_plot, algae_N = algae_d15N_plot),
+       function(p) ggplot_build(p)$layout$panel_params[[1]]$y.range)
 #===Host 15N/13C isotope scatterplot====
 
 #create scatterplot
