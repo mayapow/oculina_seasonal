@@ -747,8 +747,10 @@ overlap_tab <- lapply(trts, function(trt) {
 overlap_tab
 
 #===DEEP APOSYMBIOTIC t test====
+# stitches host and algae tables together, matching rows by frag_id and depth_sa
 paired_isotopes <- inner_join(host, algae, by = c("frag_id", "depth_sa"))
 deep_apo <- paired_isotopes %>%
+  #keeps rows where depth_sa equals Deep Apo
   filter(depth_sa == "Deep Aposymbiotic")
 
 # Carbon
@@ -756,6 +758,7 @@ t.test(
   # means 'the column d13C_host from object deep_apo'
   deep_apo$d13C_host,
   deep_apo$d13C_algae,
+  #takes host and algae value from same row bc they belong to same fragment
   paired = TRUE
 )
 
@@ -785,7 +788,6 @@ t.test(
   paired = TRUE
 )
 
-
 #===SHALLOW SYMBIOTIC t test====
 
 shallow_sym <- paired_isotopes %>%
@@ -804,9 +806,6 @@ t.test(
   shallow_sym$d15N_algae,
   paired = TRUE
 )
-
-
-
 
 
 #======Ash Free Dry Weight ========
