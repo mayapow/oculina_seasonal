@@ -260,7 +260,7 @@ algae_d15N_plot <- ggplot() +
 # Function to calculate significance letters
 get_letters <- function(data, isotope_column) {
   
-  # run ANOVA
+  # run ANOVA, tests if mean iso values differ among 3 treatments
   model <- aov(
     as.formula(paste(isotope_column, "~ depth_sa")),
     data = data
