@@ -375,6 +375,7 @@ ggsave(
   dpi = 600
 )
 
+
 #===Host 15N/13C isotope scatter plot====
 
 #create scatterplot
@@ -435,7 +436,8 @@ ggsave(
   width = 6,
   height = 6,
   dpi = 600)
-#===ISOTOPE SIBER PLOTS====
+
+#===NOT USING overall host/algae ISOTOPE SIBER PLOTS====
 
 library(ggplot2)
 library(dplyr)
@@ -518,7 +520,7 @@ algae_siber_plot <- ggplot(
 
 algae_siber_plot
 
-#===COMBINE HOST + ALGAE SIBER PLOTS====
+#===NOT USING combine host/algae siber plots====
 
 #library(ggpubr)
 
@@ -543,6 +545,7 @@ ggsave(
   dpi = 600,
   device = function(...) grDevices::png(..., type = "quartz")
 )
+
 
 #===SEPARATE HOST + ALGAE ISOTOPE PLOTS BY TREATMENT====
 
@@ -618,7 +621,7 @@ deep_apo_CN_plot
 shallow_apo_CN_plot
 shallow_sym_CN_plot
 
-# save plots
+#===save plots individually====
 
 output_dir <- here("Output", "Nov_2024", "isotopes")
 
@@ -645,7 +648,51 @@ ggsave(
   height = 7,
   dpi = 600,
 )
-#===SIGNIFICANCE TESTS, HOST VS ALGAE BY TREATMENT====
+
+#===save plots as one figure====
+# want one axis: panels B and C -- removing y title & tick labels
+shallow_apo_CN_plot <- shallow_apo_CN_plot +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank())
+
+shallow_sym_CN_plot <- shallow_sym_CN_plot +
+  theme(axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        axis.ticks.y = element_blank())
+
+# All panels, removing the individual x titles
+deep_apo_CN_plot    <- deep_apo_CN_plot    + theme(axis.title.x = element_blank())
+shallow_apo_CN_plot <- shallow_apo_CN_plot + theme(axis.title.x = element_blank())
+shallow_sym_CN_plot <- shallow_sym_CN_plot + theme(axis.title.x = element_blank())
+
+# put together
+three_panel_CN <- ggarrange(
+  deep_apo_CN_plot, shallow_apo_CN_plot, shallow_sym_CN_plot,
+  ncol = 3, nrow = 1,
+  labels = c("A", "B", "C"),
+  common.legend = TRUE,
+  legend = "bottom",
+  align = "hv"
+)
+
+# One shared x label
+three_panel_CN <- annotate_figure(
+  three_panel_CN,
+  bottom = text_grob(expression(delta^{13}*C~("\u2030 VPDB")), size = 20)
+)
+
+three_panel_CN
+
+#save
+ggsave(
+  here("Output", "Nov_2024", "isotopes", "host_algae_CN_by_treatment.jpg"),
+  three_panel_CN, width = 18, height = 6.5,dpi = 300
+)
+
+
+
+#===SIGNIFICANCE TESTS, for siber, host vs algae by treatment====
 
 #===function for SEAc of 95%=====
 seac95 <- function(x, y, level = 0.95) {
@@ -660,6 +707,44 @@ seac_tab <- isotope_combined %>%
             SEAc_95 = seac95(d13C, d15N),
             .groups = "drop")
 seac_tab
+#===calculate ellipse overlap====
+
+#library(SIBER)
+
+siber_data <- bind_rows(
+  host  %>% transmute(iso1 = d13C_host,  iso2 = d15N_host,
+                      group = as.character(depth_sa), community = "Host"),
+  algae %>% transmute(iso1 = d13C_algae, iso2 = d15N_algae,
+                      group = as.character(depth_sa), community = "Algae")) %>%
+  filter(!is.na(iso1), !is.na(iso2)) %>%
+  as.data.frame()
+
+siber_obj <- createSiberObject(siber_data)
+
+#means "compare these ellipses"
+maxLikOverlap("Host.Deep Aposymbiotic", "Algae.Deep Aposymbiotic",
+              siber_obj, p.interval = 0.95, n = 100)
+
+#treatments
+trts <- c("Deep Aposymbiotic", "Shallow Aposymbiotic", "Shallow Symbiotic")
+
+#lapply() runs the function once for each treatment
+overlap_tab <- lapply(trts, function(trt) {
+  o <- maxLikOverlap(paste0("Host.", trt), paste0("Algae.", trt),
+                     siber_obj, p.interval = 0.95, n = 100)
+  #building new data frame per treatment
+  data.frame(treatment = trt,
+             overlap = o[["overlap"]],
+             host_area = o[["area.1"]],
+             algae_area = o[["area.2"]]) 
+}) %>%
+  bind_rows() %>%
+  #adding percentage columns
+  mutate(pct_of_host  = 100 * overlap / host_area,
+         pct_of_algae = 100 * overlap / algae_area,
+         pct_of_union = 100 * overlap / (host_area + algae_area - overlap))
+
+overlap_tab
 
 #===DEEP APOSYMBIOTIC t test====
 paired_isotopes <- inner_join(host, algae, by = c("frag_id", "depth_sa"))
@@ -719,6 +804,9 @@ t.test(
   shallow_sym$d15N_algae,
   paired = TRUE
 )
+
+
+
 
 
 #======Ash Free Dry Weight ========
