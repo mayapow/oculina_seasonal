@@ -93,7 +93,7 @@ host_d13C_plot <- ggplot() +
   #shortens treatment names
   scale_x_discrete(labels = c("Deep Apo", "Shallow Apo", "Shallow Sym")) +
   # sets y axis limits
-  coord_cartesian(ylim = c(-24, -19), expand = false, clip = "off") +
+  coord_cartesian(ylim = c(-24, -19), expand = FALSE, clip = "off") +
   # sets theme of graph & font size
   theme_bw(base_size = 22) +
   theme(
@@ -252,7 +252,7 @@ algae_d15N_plot <- ggplot() +
   labs(y = expression(delta^{15}*N~("\u2030")))
 
 
-#===ANOVA + TUKEY SIGNIFICANCE LETTERS====
+#===ANOVA + TUKEY significance letters====
 
 #install.packages("multcompView")
 #library(multcompView)
@@ -289,7 +289,7 @@ host_d15N_letters <- get_letters(host, "d15N_host")
 algae_d15N_letters <- get_letters(algae, "d15N_algae")
 
 
-#===ADD SIGNIFICANCE LETTERS TO PLOTS====
+#===add significance letters to plots====
 
 # Function to position letters above each treatment
 add_letters <- function(plot, data, summary_data,
@@ -324,7 +324,7 @@ add_letters <- function(plot, data, summary_data,
       inherit.aes = FALSE,
       size = 7,
       fontface = "bold"
-    ) +
+    )
 }
 
 # Host carbon
@@ -375,10 +375,7 @@ ggsave(
   dpi = 600
 )
 
-sapply(list(host_C = host_d13C_plot, algae_C = algae_d13C_plot,
-            host_N = host_d15N_plot, algae_N = algae_d15N_plot),
-       function(p) ggplot_build(p)$layout$panel_params[[1]]$y.range)
-#===Host 15N/13C isotope scatterplot====
+#===Host 15N/13C isotope scatter plot====
 
 #create scatterplot
 host_CN_plot <- ggplot(host,
@@ -411,7 +408,7 @@ ggsave(
   height = 6,
   dpi = 600)
 
-#===Algae 15N/13C isotope scatterplot====
+#===Algae 15N/13C isotope scatter plot====
 algae_CN_plot <- ggplot(
   algae,
   aes(x = d13C_algae,y = d15N_algae,color = depth_sa)) +
@@ -440,8 +437,8 @@ ggsave(
   dpi = 600)
 #===ISOTOPE SIBER PLOTS====
 
-#library(ggplot2)
-#library(dplyr)
+library(ggplot2)
+library(dplyr)
 
 depth_cols <- c(
   "Deep Aposymbiotic" = "cyan3",
@@ -452,10 +449,9 @@ depth_cols <- c(
 # HOST ISOTOPE PLOT
 
 host_siber_plot <- ggplot(
-  host,
-  aes(x = d13C_host,y = d15N_host,color = depth_sa)) +
+  host, aes(x = d13C_host,y = d15N_host,color = depth_sa)) +
   
-  # individual samples
+  # plot individual samples
   geom_point(
     size = 3,
     alpha = 0.7) +
@@ -485,8 +481,6 @@ host_siber_plot <- ggplot(
     legend.text = element_text(size = 14),
     legend.position = "right")
 
-
-# Show host plot
 host_siber_plot
 
 # ALGAE ISOTOPE PLOT
@@ -522,8 +516,6 @@ algae_siber_plot <- ggplot(
     legend.text = element_text(size = 14),
     legend.position = "right")
 
-
-# Show algae plot
 algae_siber_plot
 
 #===COMBINE HOST + ALGAE SIBER PLOTS====
@@ -570,6 +562,7 @@ tissue_cols <- c(
 make_isotope_plot <- function(group_name) {
   group_data <- isotope_combined %>%
     filter(depth_sa == group_name)
+  
   ggplot(
     group_data,
     aes(x = d13C, y = d15N, color = tissue)
@@ -654,16 +647,28 @@ ggsave(
 )
 #===SIGNIFICANCE TESTS, HOST VS ALGAE BY TREATMENT====
 
-#SEAc
+#===function for SEAc of 95%=====
+seac95 <- function(x, y, level = 0.95) {
+  ok <- complete.cases(x, y); x <- x[ok]; y <- y[ok]
+  n <- length(x)
+  pi * qchisq(level, 2) * sqrt(det(cov(cbind(x, y)))) * (n - 1) / (n - 2)
+}
 
+seac_tab <- isotope_combined %>%
+  group_by(tissue, depth_sa) %>%
+  summarise(n = sum(complete.cases(d13C, d15N)),
+            SEAc_95 = seac95(d13C, d15N),
+            .groups = "drop")
+seac_tab
 
-# DEEP APOSYMBIOTIC
-
+#===DEEP APOSYMBIOTIC t test====
+paired_isotopes <- inner_join(host, algae, by = c("frag_id", "depth_sa"))
 deep_apo <- paired_isotopes %>%
   filter(depth_sa == "Deep Aposymbiotic")
 
 # Carbon
 t.test(
+  # means 'the column d13C_host from object deep_apo'
   deep_apo$d13C_host,
   deep_apo$d13C_algae,
   paired = TRUE
@@ -676,8 +681,7 @@ t.test(
   paired = TRUE
 )
 
-# ============================================================
-# SHALLOW APOSYMBIOTIC
+#===SHALLOW APOSYMBIOTIC t test=====
 
 shallow_apo <- paired_isotopes %>%
   filter(depth_sa == "Shallow Aposymbiotic")
@@ -697,8 +701,7 @@ t.test(
 )
 
 
-# ============================================================
-# SHALLOW SYMBIOTIC
+#===SHALLOW SYMBIOTIC t test====
 
 shallow_sym <- paired_isotopes %>%
   filter(depth_sa == "Shallow Symbiotic")
