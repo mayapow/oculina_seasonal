@@ -485,7 +485,7 @@ ggplot(significant_features_chlor_plot,
 
 ```{r}
 
-ggplot(ocu_final, aes(x = ug_chla_cm, y = x12592_1007_57094_6_271, color = depth_sa)) +
+ggplot(oculina_final, aes(x = ug_chla_cm, y = x10550_979_53805_5_455, color = depth_sa)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, color = "black") +
   stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") 
@@ -494,24 +494,24 @@ ggplot(ocu_final, aes(x = ug_chla_cm, y = x12592_1007_57094_6_271, color = depth
 ```{r}
 
 library(agricolae)
-microcystin_letters_model <- aov(x12592_1007_57094_6_271 ~ depth_sa, data = ocu_final)
+microcystin_letters_model <- aov(x10550_979_53805_5_455 ~ depth_sa, data = ocu_final)
 tukey_microcystin <- HSD.test(microcystin_letters_model, "depth_sa", group = TRUE)
 
 letters_df_microcystin <- data.frame(
   group = row.names(tukey_microcystin$groups),
   letter = tukey_microcystin$groups$groups,
-  y_pos = tapply(ocu_final$x12592_1007_57094_6_271, ocu_final$depth_sa, max) + 0.5
+  y_pos = tapply(ocu_final$x10550_979_53805_5_455, ocu_final$depth_sa, max) + 0.5
 )
 
 
-ggplot(ocu_final, aes(x = depth_sa, y = x12592_1007_57094_6_271)) +
+ggplot(ocu_final, aes(x = depth_sa, y = x10550_979_53805_5_455)) +
   geom_boxplot() +
 
 geom_text(data = letters_df_microcystin, aes(x = group, y = Inf, label = letter, vjust = 1), inherit.aes = FALSE) +
   labs(
    # subtitle = paste("ANOVA p-value:", format.pval(p_val, digits = 3)),
     x = "Fragment symbiotic state",
-    y = "Abundance of Metabolite x12592",
+    y = "Abundance of Metabolite x10550",
     fill = "Fragment symbiotic state"
   ) 
 ```
@@ -529,11 +529,84 @@ oculina_sym <- oculina_sym[, colSums(oculina_sym != 0, na.rm = TRUE) > 0]
 ```
 
 ```{r}
-ocu_apo_feats <- list(colnames(oculina_apo[, c(40:14682)]))
-ocu_sym_feats <- list(colnames(oculina_sym[, c(40:15360)]))
+ocu_apo_feats <- list(colnames(oculina_apo[, c(40:14652)]))
+ocu_sym_feats <- list(colnames(oculina_sym[, c(40:15330)]))
 ```
 
 ```{r}
 
-shared_feats_apo_sym <- intersect(unlist(ocu_apo_feats), unlist(ocu_sym_feats))
+#shared_feats_apo_sym <- intersect(unlist(ocu_apo_feats), unlist(ocu_sym_feats))
+#print(shared_feats_apo_sym)
+
+shared_feats_apo_sym_df <- oculina_final[ ,c(40:16396)] |>
+  select(all_of(shared_feats_apo_sym))
+```
+
+```{r}
+
+shared_feats_apo_sym_df <- shared_feats_apo_sym_df %>%
+  bind_rows(
+    summarise(., 
+              Name = "Total_abundance", 
+              across(where(is.numeric), sum))
+  )
+```
+
+```{r}
+#oculina_final <- read.csv("../Data/Metabolomics/oculina_final.csv")
+```
+
+```{r}
+shared_feats_long <- shared_feats_apo_sym_df[77,-c(13578)] |>
+  pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
+  arrange(desc(Abundance)) |>
+  slice_head(n = 50) 
+```
+
+```{r}
+var_abundance_shared <- shared_feats_long |>
+  inner_join(feats_with_classes, join_by(feature == metabolite)) |>
+  select(feature, 
+         Abundance, 
+         compound_class, 
+         origin, 
+         npc_number_superclass) 
+
+ggplot(var_abundance_shared, 
+       aes(x = reorder(feature, Abundance), 
+           y = Abundance,
+           fill = compound_class
+           )) +
+  
+          geom_col() +
+ # scale_fill_manual(values = c("Bleached" = "orange", "Non-Bleached" = "blue")) +
+  
+ # scale_fill_manual(values = c("#FBE183FF", "#F4C40FFF", "#FE9B00FF", "#D8443CFF", "#9B3441FF", "#DE597CFF", "#E87B89FF", "#E6A2A6FF", "#AA7AA1FF", "#9F5691FF", "#633372FF", "#1F6E9CFF", "#2B9B81FF", "#92C051FF")
+
+#) +
+ # geom_text(aes(label = Symbol), vjust = 0, hjust = 0, size = 4) +
+  
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Abundance of Shared Features Apo and Sym",
+       x = "Feature",
+       y = "Abundance") +
+  theme_minimal()
+```
+
+```{r}
+sym_only_df <- sym_df |>
+  
+sym_df <- oculina_sym %>%
+  bind_rows(
+    summarise(., 
+              Name = "Total_abundance", 
+              across(where(is.numeric), sum))
+  )
+
+
+
+#sym_df_long <- sym_df[32,-c(1)] |>
+ # pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
+ # arrange(desc(Abundance)) |>
+ # slice_head(n = 50) 
 ```
