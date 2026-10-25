@@ -553,7 +553,7 @@ shared_feats_apo_sym_df <- shared_feats_apo_sym_df %>%
 ```
 
 ```{r}
-#oculina_final <- read.csv("../Data/Metabolomics/oculina_final.csv")
+oculina_final <- read.csv("../Data/Metabolomics/oculina_final.csv")
 ```
 
 ```{r}
@@ -594,9 +594,14 @@ ggplot(var_abundance_shared,
 ```
 
 ```{r}
-sym_only_df <- sym_df |>
+
+
+#unique_cols <- setdiff(names(oculina_sym), names(oculina_apo))
+
+#sym_only_df <- oculina_sym[, unique_cols]
   
-sym_df <- oculina_sym %>%
+sym_only_df_abundance <- oculina_final[ ,c(40:16396)] %>%
+  select(all_of(unique_cols)) %>%
   bind_rows(
     summarise(., 
               Name = "Total_abundance", 
@@ -605,8 +610,91 @@ sym_df <- oculina_sym %>%
 
 
 
-#sym_df_long <- sym_df[32,-c(1)] |>
- # pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
- # arrange(desc(Abundance)) |>
- # slice_head(n = 50) 
+sym_only_df_abundance_long <- sym_only_df_abundance[77,-c(1715)] |>
+  pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
+  arrange(desc(Abundance)) |>
+  slice_head(n = 50)
+```
+
+```{r}
+var_abundance_sym <- sym_only_df_abundance_long |>
+  inner_join(feats_with_classes, join_by(feature == metabolite)) |>
+  select(feature, 
+         Abundance, 
+         compound_class, 
+         origin, 
+         npc_number_superclass) 
+
+ggplot(var_abundance_sym, 
+       aes(x = reorder(feature, Abundance), 
+           y = Abundance,
+           fill = compound_class
+           )) +
+  
+          geom_col() +
+ # scale_fill_manual(values = c("Bleached" = "orange", "Non-Bleached" = "blue")) +
+  
+ # scale_fill_manual(values = c("#FBE183FF", "#F4C40FFF", "#FE9B00FF", "#D8443CFF", "#9B3441FF", "#DE597CFF", "#E87B89FF", "#E6A2A6FF", "#AA7AA1FF", "#9F5691FF", "#633372FF", "#1F6E9CFF", "#2B9B81FF", "#92C051FF")
+
+#) +
+ # geom_text(aes(label = Symbol), vjust = 0, hjust = 0, size = 4) +
+  
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Abundance of unique features to Symbiotic samples",
+       x = "Feature",
+       y = "Abundance") +
+  theme_minimal()
+```
+
+```{r}
+unique_cols_apo <- setdiff(names(oculina_apo), names(oculina_sym))
+apo_only_df <- oculina_apo[, unique_cols_apo]
+  
+apo_only_df_abundance <- oculina_final[ ,c(40:16396)] %>%
+  select(all_of(unique_cols_apo)) %>%
+  bind_rows(
+    summarise(., 
+              Name = "Total_abundance", 
+              across(where(is.numeric), sum))
+  )
+
+apo_only_df_abundance_long <- apo_only_df_abundance[77,-c(1037)] |>
+  pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
+  arrange(desc(Abundance)) |>
+  slice_head(n = 50)
+```
+
+```{r, fig.height = 8}
+var_abundance_apo <- apo_only_df_abundance_long |>
+  inner_join(feats_with_classes, join_by(feature == metabolite)) |>
+  select(feature, 
+         Abundance, 
+         compound_class, 
+         origin, 
+         npc_number_superclass) 
+
+ggplot(var_abundance_apo, 
+       aes(x = reorder(feature, Abundance), 
+           y = Abundance,
+           fill = compound_class
+           )) +
+  
+          geom_col() +
+ # scale_fill_manual(values = c("Bleached" = "orange", "Non-Bleached" = "blue")) +
+  
+ # scale_fill_manual(values = c("#FBE183FF", "#F4C40FFF", "#FE9B00FF", "#D8443CFF", "#9B3441FF", "#DE597CFF", "#E87B89FF", "#E6A2A6FF", "#AA7AA1FF", "#9F5691FF", "#633372FF", "#1F6E9CFF", "#2B9B81FF", "#92C051FF")
+
+#) +
+ # geom_text(aes(label = Symbol), vjust = 0, hjust = 0, size = 4) +
+  
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Abundance of unique features to Aposymbiotic samples",
+       x = "Feature",
+       y = "Abundance") +
+  theme_minimal()
+```
+
+```{r}
+
+
 ```
