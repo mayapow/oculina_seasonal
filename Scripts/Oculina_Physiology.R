@@ -262,6 +262,7 @@ get_letters <- function(data, isotope_column) {
   
   # run ANOVA, tests if mean iso values differ among 3 treatments
   model <- aov(
+    #turn text into a formula
     as.formula(paste(isotope_column, "~ depth_sa")),
     data = data
   )
@@ -272,7 +273,7 @@ get_letters <- function(data, isotope_column) {
   
   # Convert Tukey comparisons into letters
   letters <- multcompLetters4(model, TukeyHSD(model))
-  
+  #package letters into a table
   data.frame(
     depth_sa = names(letters$depth_sa$Letters),
     letter = letters$depth_sa$Letters
@@ -287,6 +288,51 @@ algae_d13C_letters <- get_letters(algae, "d13C_algae")
 host_d15N_letters <- get_letters(host, "d15N_host")
 
 algae_d15N_letters <- get_letters(algae, "d15N_algae")
+
+#===letters without a function (gets same values as with function!)====
+#host d13C
+model <- aov(d13C_host ~ depth_sa, data = host)
+print(summary(model))
+print(TukeyHSD(model))
+let <- multcompLetters4(model, TukeyHSD(model))
+host_d13C_letters <- data.frame(
+  depth_sa = names(let$depth_sa$Letters),
+  letter   = let$depth_sa$Letters
+)
+host_d13C_letters
+
+#host d15N
+model <- aov(d15N_host ~ depth_sa, data = host)
+print(summary(model))
+print(TukeyHSD(model))
+let <- multcompLetters4(model, TukeyHSD(model))
+host_d15N_letters <- data.frame(
+  depth_sa = names(let$depth_sa$Letters),
+  letter   = let$depth_sa$Letters
+)
+host_d15N_letters
+
+#algae d13C
+model <- aov(d13C_algae ~ depth_sa, data = algae)
+print(summary(model))
+print(TukeyHSD(model))
+let <- multcompLetters4(model, TukeyHSD(model))
+algae_d13C_letters <- data.frame(
+  depth_sa = names(let$depth_sa$Letters),
+  letter   = let$depth_sa$Letters
+)
+algae_d13C_letters
+
+#algae d15N
+model <- aov(d15N_algae ~ depth_sa, data = algae)
+print(summary(model))
+print(TukeyHSD(model))
+let <- multcompLetters4(model, TukeyHSD(model))
+algae_d15N_letters <- data.frame(
+  depth_sa = names(let$depth_sa$Letters),
+  letter   = let$depth_sa$Letters
+)
+algae_d15N_letters
 
 
 #===add significance letters to plots====
