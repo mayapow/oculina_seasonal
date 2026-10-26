@@ -42,17 +42,17 @@ library(lubridate)
 
 #nov 2024 data
 
-iso_nov24<-read.csv(here("Data/Nov_2024/oculina_nov2024_isotopes.csv"))
+iso_nov24<-read.csv("Data/Nov_2024/oculina_nov2024_isotopes.csv")
 iso_nov24 <- iso_nov24 %>%
   filter(sample_id !="A5-A-1124-Algae", sample_id !="S11-S-new-1124-Algae") %>% #remove sample IDs that are not paired algae & host
   filter(algae_host != "Filter") #remove filter samples for now
 ```
 
 ```{r}
-iso_nov24_host <- read.csv(here("Data/Nov_2024/oculina_nov2024_isotopes_host.csv")) 
+iso_nov24_host <- read.csv("Data/Nov_2024/oculina_nov2024_isotopes_host.csv")
 iso_nov24_host <- iso_nov24_host %>%
   select(-sample_id,-algae_host,-weight_mg,-total_C_ug,-pct_C,-pct_N,-total_N_ug)
-iso_nov24_algae<-read.csv(here("Data/Nov_2024/oculina_nov2024_isotopes_algae.csv"))
+iso_nov24_algae<-read.csv("Data/Nov_2024/oculina_nov2024_isotopes_algae.csv")
 iso_nov24_algae <- iso_nov24_algae %>%
   select(-sample_id,-algae_host,-weight_mg,-total_C_ug,-pct_C,-pct_N,-total_N_ug)
 iso_nov24_holo <- iso_nov24_algae %>%
@@ -314,5 +314,9 @@ ggplot(sig_feat_13c_plot,
        x = "Feature",
        y = "Mean Increase MSE") +
   theme_minimal()
+
+```
+
+```{r}
 
 ```
