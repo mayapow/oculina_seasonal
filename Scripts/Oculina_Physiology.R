@@ -290,15 +290,25 @@ host_d15N_letters <- get_letters(host, "d15N_host")
 algae_d15N_letters <- get_letters(algae, "d15N_algae")
 
 #===letters without a function (gets same values as with function!)====
+
 #host d13C
+#q: does host d13C differ among the three depth_sa groups?
+# stores ANOVA result in model
 model <- aov(d13C_host ~ depth_sa, data = host)
+#data = host tells R to look for these columns in the host table
 print(summary(model))
 print(TukeyHSD(model))
+#convert the tukey p-vals into significance letters, stores in let
 let <- multcompLetters4(model, TukeyHSD(model))
+
+#build table with one row per group and its letter
 host_d13C_letters <- data.frame(
+  #create first column, depth_sa
   depth_sa = names(let$depth_sa$Letters),
+  #second column for letters
   letter   = let$depth_sa$Letters
 )
+#print output
 host_d13C_letters
 
 #host d15N
