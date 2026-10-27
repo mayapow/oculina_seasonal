@@ -559,8 +559,7 @@ oculina_final <- read.csv("../Data/Metabolomics/oculina_final.csv")
 ```{r}
 shared_feats_long <- shared_feats_apo_sym_df[77,-c(13578)] |>
   pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
-  arrange(desc(Abundance)) |>
-  slice_head(n = 50) 
+  arrange(desc(Abundance)) 
 ```
 
 ```{r}
@@ -596,9 +595,9 @@ ggplot(var_abundance_shared,
 ```{r}
 
 
-#unique_cols <- setdiff(names(oculina_sym), names(oculina_apo))
+unique_cols <- setdiff(names(oculina_sym), names(oculina_apo))
 
-#sym_only_df <- oculina_sym[, unique_cols]
+sym_only_df <- oculina_sym[, unique_cols]
   
 sym_only_df_abundance <- oculina_final[ ,c(40:16396)] %>%
   select(all_of(unique_cols)) %>%
