@@ -318,5 +318,41 @@ ggplot(sig_feat_13c_plot,
 ```
 
 ```{r}
+iso_ocu_merge <- iso_ocu_merge |>
+  mutate(sample_id = replace(sample_id, sample_id == "A11-A-old", "A11-A"), 
+         sample_id = replace(sample_id, sample_id == "A11-S-old", "A11-S"),
+         sample_id = replace(sample_id, sample_id == "A13-A-new", "A13-A"),
+         sample_id = replace(sample_id, sample_id == "A13-S-old", "A13-S"),
+         sample_id = replace(sample_id, sample_id == "A14-A-old", "A14-A"), 
+         sample_id = replace(sample_id, sample_id == "A14-S-old", "A14-S"),
+         sample_id = replace(sample_id, sample_id == "S11-A-old", "S11-A"), 
+         sample_id = replace(sample_id, sample_id == "S11-S-old", "S11-S"),
+         sample_id = replace(sample_id, sample_id == "D1", "D1-A"), 
+         sample_id = replace(sample_id, sample_id == "D2", "D2-A"),
+         sample_id = replace(sample_id, sample_id == "D3", "D3-A"), 
+         sample_id = replace(sample_id, sample_id == "D4", "D4-A"),
+         sample_id = replace(sample_id, sample_id == "D5", "D5-A"), 
+         sample_id = replace(sample_id, sample_id == "D6", "D6-A"),
+         sample_id = replace(sample_id, sample_id == "D7", "D7-A"), 
+         sample_id = replace(sample_id, sample_id == "D8", "D8-A"),
+         sample_id = replace(sample_id, sample_id == "D9", "D9-A"), 
+         sample_id = replace(sample_id, sample_id == "D10", "D10-A"),
+         sample_id = replace(sample_id, sample_id == "D11", "D11-A"), 
+         sample_id = replace(sample_id, sample_id == "D12", "D12-A"),
+         sample_id = replace(sample_id, sample_id == "D13", "D13-A"), 
+         sample_id = replace(sample_id, sample_id == "D14", "D14-A"),
+         sample_id = replace(sample_id, sample_id == "D15", "D15-A"))
 
+```
+
+scatter plot: metabolite diversity vs (H-S) 15n
+
+```{r}
+iso_ocu_div <- iso_ocu_merge |>
+  left_join(ocu_fin_div[,c(13, 22:24)], by = "sample_id")
+```
+
+```{r}
+ggplot(iso_ocu_div, aes(x = Richness, y= diff_15N, fill = depth_sa.x))+
+  geom_point()
 ```
