@@ -353,6 +353,14 @@ iso_ocu_div <- iso_ocu_merge |>
 ```
 
 ```{r}
-ggplot(iso_ocu_div, aes(x = Richness, y= diff_15N, fill = depth_sa.x))+
-  geom_point()
+ggplot(iso_ocu_div, aes(x = Richness, y= diff_13C, color = depth_sa.x))+
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") 
+
+ggplot(iso_ocu_div, aes(x = Entropy, y= diff_13C, color = depth_sa.x))+
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") 
+
 ```
