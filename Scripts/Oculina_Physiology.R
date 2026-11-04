@@ -680,7 +680,7 @@ deep_apo_CN_plot
 shallow_apo_CN_plot
 shallow_sym_CN_plot
 
-#===save plots individually====
+#===save SIBER plots individually====
 
 output_dir <- here("Output", "Nov_2024", "isotopes")
 
@@ -708,7 +708,7 @@ ggsave(
   dpi = 600,
 )
 
-#===save plots as one figure====
+#===save SIBER plots as one figure====
 # want one axis: panels B and C -- removing y title & tick labels
 shallow_apo_CN_plot <- shallow_apo_CN_plot +
   theme(axis.title.y = element_blank(),
@@ -751,7 +751,7 @@ ggsave(
 
 
 
-#===SIGNIFICANCE TESTS, for siber, host vs algae by treatment====
+#===SIGNIFICANCE TESTS, for SIBER, host vs algae by treatment====
 
 #===function for SEAc of 95%=====
 seac95 <- function(x, y, level = 0.95) {
@@ -804,6 +804,7 @@ overlap_tab <- lapply(trts, function(trt) {
          pct_of_union = 100 * overlap / (host_area + algae_area - overlap))
 
 overlap_tab
+
 
 #===ellipse overlap WITHOUT SIBER====
 
@@ -1023,6 +1024,7 @@ ggsave(
   dpi = 300,
   bg = "white"
 )
+
 
 
 #===DEEP APOSYMBIOTIC t test====
