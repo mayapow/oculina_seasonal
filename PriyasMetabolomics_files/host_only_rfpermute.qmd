@@ -34,6 +34,12 @@ Oculina_joined_host <- Oculina_long %>%
               select(metabolite, origin),
             by = c("Metabolite" = "metabolite")) |>
   filter(origin == "host") 
+
+Oculina_joined_symb <- Oculina_long %>%
+  left_join(feats_with_classes %>%
+              select(metabolite, origin),
+            by = c("Metabolite" = "metabolite")) |>
+  filter(origin == "symbiont") 
 ```
 
 ```{r}
@@ -44,11 +50,17 @@ Oculina_host_wide <- Oculina_joined_host %>%
 Oculina_host_wide_b <- Oculina_host_wide |>
   left_join(oculina_final |>
               select(full_id, bleaching))
+
+Oculina_symb_wide <- Oculina_joined_symb %>%
+  pivot_wider(names_from = Metabolite,
+              values_from = Abundance)
 ```
 
 ```{r}
 num_df_ocu_host_only <- Oculina_host_wide_b[, -c(1, 2)]
 num_df_ocu_host_only$bleaching <- as.factor(num_df_ocu_host_only$bleaching)
+
+num_df_ocu_symb_only <- Oculina_symb_wide[, -c(1, 2)]
 ```
 
 ```{r}
@@ -196,6 +208,18 @@ log2FC_df_host_chlor <- data.frame(
   metabolite = sig_feat_phen_host_chlor,
   log2FC = log2FC_host_chlor
 )
+```
+
+```{r}
+host_only_with_id <- num_df_ocu_host_only |>
+  left_join(ocu_fin_div[,c(13,30)], by = "x22863_768_59077_10_971")
+
+write.csv(host_only_with_id, file = "oculina_host_only_id.csv")
+
+symb_only_with_id <- num_df_ocu_symb_only |>
+  left_join(ocu_fin_div[,c(13,29)], by = "x19344_800_60417_9_097")
+
+write.csv(symb_only_with_id, file = "oculina_symb_only_id.csv")
 ```
 
 ```{r}

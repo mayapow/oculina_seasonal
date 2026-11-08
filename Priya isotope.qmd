@@ -143,7 +143,7 @@ rfpermute to see which features are useful in determining isotope *difference 15
 library(rfPermute)
 
 num_df_iso_n15 <- iso_ocu_merge[,c(8:16364, 16401)]
-rfp_iso_n15 <- rfPermute(diff_15N ~., data = num_df_iso_n15, na.action = na.omit, ntree = 500, num.rep = 100)
+#rfp_iso_n15 <- rfPermute(diff_15N ~., data = num_df_iso_n15, na.action = na.omit, ntree = 500, num.rep = 100)
 
 rfp_iso_n15
 
@@ -189,6 +189,10 @@ log2FC_n15_df <- data.frame(
 )
 
 
+
+```
+
+```{r}
 
 ```
 

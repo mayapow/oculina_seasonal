@@ -19,7 +19,7 @@ rfpermute classification 3 ways on oculina_final:
 
 ```{r}
 depthsa_num$depth_sa <- as.factor(depthsa_num$depth_sa)
-rfp_phen_dep <- rfPermute(depth_sa ~., data = depthsa_num, na.action = na.omit, ntree = 500, num.rep = 100)
+#rfp_phen_dep <- rfPermute(depth_sa ~., data = depthsa_num, na.action = na.omit, ntree = 500, num.rep = 100)
 
 rfp_phen_dep
 
@@ -73,7 +73,9 @@ log2FC_df_dep_meta <- log2FC_df_dep |>
 library(ggpattern)
 sig_feat_dep_plot <- log2FC_df_dep_meta |>
   arrange(desc(metabolite.MeanDecreaseAccuracy)) |>
-  slice_head(n = 50)
+  slice_head(n = 50) |>
+     mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic"))
+
 
 ggplot(sig_feat_dep_plot, aes(
   x = reorder(metabolite.Feature, metabolite.MeanDecreaseAccuracy), 
