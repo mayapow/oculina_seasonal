@@ -368,3 +368,45 @@ ggplot(iso_ocu_div, aes(x = Entropy, y= diff_13C, color = depth_sa.x))+
   stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") 
 
 ```
+
+```{r}
+
+host_only_names <- names(num_df_ocu_host_only)
+# "x22863_768_59077_10_971"
+
+
+host_only_with_id <- num_df_ocu_host_only |>
+  left_join(ocu_fin_div[,c(13,30)], by = "x22863_768_59077_10_971")
+
+metadata_ocu_fin <- iso_ocu_div |>
+  select(sample_id,
+         ug_chla_cm,
+         sym_cm2,
+         chla_pg_sym,
+         depth_sa.y,
+         d15N,
+         d13C,
+         diff_15N,
+         diff_13C,
+         sum_15N,
+         sum_13C,
+         Richness,
+         Entropy,
+         Evenness)
+
+iso_ocu_div_host <- host_only_with_id |>
+  left_join(metadata_ocu_fin, by = "sample_id")
+```
+
+```{r}
+ggplot(iso_ocu_div_host, aes(x = Richness, y= diff_15N, color = depth_sa.x))+
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") 
+
+ggplot(iso_ocu_div_host, aes(x = Entropy, y= diff_15N, color = depth_sa.x))+
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") 
+
+```
