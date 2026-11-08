@@ -22,6 +22,9 @@ library(performance)
 library(ggpubr)
 #install.packages("SIBER")
 library(SIBER)
+#install.packages("sf")
+library(sf)
+
 
 #===Isotopes, 4 plots: Host C and N, Algae C and N====
 #organizing data
@@ -677,7 +680,7 @@ deep_apo_CN_plot
 shallow_apo_CN_plot
 shallow_sym_CN_plot
 
-#===save plots individually====
+#===save SIBER plots individually====
 
 output_dir <- here("Output", "Nov_2024", "isotopes")
 
@@ -705,7 +708,7 @@ ggsave(
   dpi = 600,
 )
 
-#===save plots as one figure====
+#===save SIBER plots as one figure====
 # want one axis: panels B and C -- removing y title & tick labels
 shallow_apo_CN_plot <- shallow_apo_CN_plot +
   theme(axis.title.y = element_blank(),
@@ -748,7 +751,7 @@ ggsave(
 
 
 
-#===SIGNIFICANCE TESTS, for siber, host vs algae by treatment====
+#===SIGNIFICANCE TESTS, for SIBER, host vs algae by treatment====
 
 #===function for SEAc of 95%=====
 seac95 <- function(x, y, level = 0.95) {
@@ -763,7 +766,7 @@ seac_tab <- isotope_combined %>%
             SEAc_95 = seac95(d13C, d15N),
             .groups = "drop")
 seac_tab
-#===calculate ellipse overlap====
+#===calculate ellipse overlap using SIBER====
 
 #library(SIBER)
 
@@ -801,6 +804,228 @@ overlap_tab <- lapply(trts, function(trt) {
          pct_of_union = 100 * overlap / (host_area + algae_area - overlap))
 
 overlap_tab
+
+
+#===ellipse overlap WITHOUT SIBER====
+
+# builds each 95% ellipse from the group mean and covariance
+#then finds the intersection area with the sf package
+
+#install.packages("sf")
+library(sf)
+
+# ellipse outline as a closed set of points
+make_ellipse <- function(x, y, level = 0.95, small = TRUE, npts = 500) {
+  ok <- complete.cases(x, y); x <- x[ok]; y <- y[ok]
+  n  <- length(x)
+  S  <- cov(cbind(x, y))
+  if (small) S <- S * (n - 1) / (n - 2) #small-sample correction
+  eig   <- eigen(S)
+  theta <- seq(0, 2 * pi, length.out = npts + 1)[-(npts + 1)]
+  circle <- rbind(cos(theta), sin(theta))
+  r   <- sqrt(qchisq(level, 2))
+  pts <- t(c(mean(x), mean(y)) + r * eig$vectors %*% diag(sqrt(eig$values)) %*% circle)
+  rbind(pts, pts[1, ])                        
+}
+
+# overlap between host and algae within one treatment
+overlap_nosiber <- function(dat, trt, level = 0.95, small = TRUE) {
+  h <- dat %>% filter(tissue == "Host",  depth_sa == trt)
+  a <- dat %>% filter(tissue == "Algae", depth_sa == trt)
+  p1 <- st_polygon(list(make_ellipse(h$d13C, h$d15N, level, small)))
+  p2 <- st_polygon(list(make_ellipse(a$d13C, a$d15N, level, small)))
+  inter <- st_intersection(p1, p2)
+  ov <- if (st_is_empty(inter)) 0 else as.numeric(st_area(inter))
+  a1 <- as.numeric(st_area(p1)); a2 <- as.numeric(st_area(p2))
+  data.frame(treatment = trt, overlap = ov, host_area = a1, algae_area = a2,
+             pct_of_host  = 100 * ov / a1,
+             pct_of_algae = 100 * ov / a2,
+             pct_of_union = 100 * ov / (a1 + a2 - ov))
+}
+
+trts <- c("Deep Aposymbiotic", "Shallow Aposymbiotic", "Shallow Symbiotic")
+
+overlap_tab_nosiber <- lapply(trts, function(t) overlap_nosiber(isotope_combined, t)) %>%
+  bind_rows()
+#should match overlap_tab to 2-3 decimals (THEY MATCH!)
+overlap_tab_nosiber
+
+
+#===removing outliers outside 99% ellipse====
+
+flag_outliers <- function(dat, cutoff = 0.99) {
+  dat %>%
+    #remove rows w missing C or N values
+    filter(!is.na(d13C), !is.na(d15N)) %>%
+    #separate by tissue type and treatment
+    group_by(tissue, depth_sa) %>%
+    #create two new columns
+    # md2 = squared Mahalanobis distance
+    # outlier = true or false depending on distance
+    mutate(md2 = mahalanobis(
+      # combine C and N values into two-col table
+      cbind(d13C, d15N),
+      # calculate mean d13C and mean d25N
+      colMeans(cbind(d13C, d15N)),
+      # calculate covariance matrix, accounts for variation in each iso
+      # and relationship between the two isos
+      cov(cbind(d13C, d15N))),
+      # flag observations whos Mah. dist exceeds 99% chi-square threshold w 2 df
+      # TRUE = potential outlier, FALSE = not flagged
+      outlier = md2 > qchisq(cutoff, 2)) %>%
+  # remove grouping to use full dataset in future  
+    ungroup()
+}
+
+#apply flag_outliers fn to combined dataset
+iso_flagged <- flag_outliers(isotope_combined, cutoff = 0.99)
+
+# which points were flagged, how many per group
+iso_flagged %>% filter(outlier)
+iso_flagged %>% count(tissue, depth_sa, outlier)
+
+# creates new dataset excluding flagged outliers
+# !outlier means keep observations where outlier == FALSE
+iso_trim <- iso_flagged %>% filter(!outlier)
+
+#calculate host/algae overlap for each treatment using dataset w/out outliers
+overlap_tab_trim <- lapply(trts, function(t) overlap_nosiber(iso_trim, t)) %>%
+  bind_rows()
+
+#compare original & trimmed overlaps
+overlap_compare <- overlap_tab_nosiber %>%
+  inner_join(overlap_tab_trim, by = "treatment", suffix = c("_orig", "_trim")) %>%
+  mutate(
+    #change in absolute host-algae overlap area
+    d_overlap = overlap_trim - overlap_orig,
+    #change in host niche area
+    d_host_area = host_area_trim - host_area_orig,
+    # change in algal niche area
+    d_algae_area = algae_area_trim - algae_area_orig) %>%
+  
+  # select columns of interest
+  select(treatment, overlap_orig, overlap_trim, d_overlap,
+         host_area_orig, host_area_trim, algae_area_orig, algae_area_trim)
+#display table
+overlap_compare
+
+#convert trimmed dataset into SIBER format
+
+siber_trim <- iso_trim %>%
+  # create and rename columns to match SIBER format
+  transmute(iso1 = d13C, iso2 = d15N, group = as.character(depth_sa),
+            community = tissue) %>%
+  as.data.frame()
+
+#create SIBER object
+siber_obj_trim <- createSiberObject(siber_trim)
+
+lapply(trts, function(t) {
+  o <- maxLikOverlap(paste0("Host.", t), paste0("Algae.", t),
+                     siber_obj_trim, p.interval = 0.95, n = 100)
+  data.frame(treatment = t, overlap = o[["overlap"]])
+}) %>% bind_rows()
+
+#=== WIP! using trimmed isotope dataset to make SIBER plots====
+
+# Colors for host and algae
+tissue_cols <- c(
+  "Host" = "navy",
+  "Algae" = "hotpink2")
+
+# Function to make the same plot for each treatment
+# Using the trimmed dataset
+make_isotope_plot_trim <- function(group_name) {
+  group_data <- iso_trim %>%
+    filter(depth_sa == group_name)
+  
+  ggplot(
+    group_data,
+    aes(x = d13C, y = d15N, color = tissue)
+  ) +
+    
+    # Individual isotope measurements
+    geom_point(
+      aes(shape = tissue), size = 3.5, alpha = 0.75) +
+    
+    # Separate 95% ellipses for Host and Algae
+    stat_ellipse(
+      aes(group = tissue),
+      type = "norm",
+      level = 0.95,
+      linewidth = 1.2,
+      linetype = "solid") +
+    
+    # Colors and shapes
+    scale_color_manual(values = tissue_cols) +
+    scale_shape_manual(
+      values = c("Host" = 16, "Algae" = 17)) +
+    
+    # Same axis limits for all three plots
+    coord_cartesian(
+      xlim = range(iso_trim$d13C, na.rm = TRUE) + c(-0.5, 0.5),
+      ylim = range(iso_trim$d15N, na.rm = TRUE) + c(-0.5, 0.5)) +
+    
+    # Labels
+    labs(
+      title = group_name,
+      x = expression(delta^{13}*C~("\u2030 VPDB")),
+      y = expression(delta^{15}*N~("\u2030 Air")),
+      color = "Tissue",
+      shape = "Tissue"
+    )
+    
+    # Formatting
+    theme_bw(base_size = 20) +
+    theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      plot.title = element_text(size = 22, face = "bold", hjust = 0.5),
+      axis.title = element_text(size = 20),
+      axis.text = element_text(size = 14),
+      legend.position = "right")
+}
+
+# Generate the three trimmed plots
+plot_DApo_trim <- make_isotope_plot_trim("Deep Aposymbiotic")
+plot_SApo_trim <- make_isotope_plot_trim("Shallow Aposymbiotic")
+plot_SSym_trim <- make_isotope_plot_trim("Shallow Symbiotic")
+
+
+library(ggpubr)
+
+# Combine all three trimmed plots
+three_panel_CN_trim <- ggarrange(
+  plot_DApo_trim, plot_SApo_trim, plot_SSym_trim,
+  ncol = 3, nrow = 1,
+  labels = c("A", "B", "C"),
+  common.legend = TRUE,
+  legend = "bottom",
+  align = "hv"
+)
+
+# One shared x label
+three_panel_CN_trim <- annotate_figure(
+  three_panel_CN_trim,
+  bottom = text_grob(
+    expression(delta^{13}*C~("\u2030 VPDB")),
+    size = 20
+  )
+)
+
+# Display combined figure
+three_panel_CN_trim
+
+ggsave(
+  "three_panel_CN_trim.pdf",
+  plot = three_panel_CN_trim,
+  width = 18,
+  height = 6,
+  dpi = 300,
+  bg = "white"
+)
+
+
 
 #===DEEP APOSYMBIOTIC t test====
 # stitches host and algae tables together, matching rows by frag_id and depth_sa
@@ -862,6 +1087,7 @@ t.test(
   shallow_sym$d15N_algae,
   paired = TRUE
 )
+
 
 
 #======Ash Free Dry Weight ========
