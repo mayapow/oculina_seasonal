@@ -412,3 +412,31 @@ ggplot(ocu_fin_div_physio, aes(x = Entropy, y = sym_cm2, color = depth_sa)) +
         ) 
 
 ```
+
+```{r, fig.width = 10}
+library(ggVennDiagram)
+
+comb_list_apo_host <- list(unique_cols_apo, host_only_names)
+
+shared_feats_apo_host <- Venn(comb_list_apo_host)
+
+shared_feats_apo_host_vis <- ggVennDiagram(comb_list_apo_host, 
+                            category.names = c("Aposymbiotic-only", "Host-only"),
+                            label_color = "white") +
+  coord_flip()
+shared_feats_apo_host_vis
+```
+
+```{r, fig.width = 10}
+library(ggVennDiagram)
+
+comb_list_sym_host <- list(unique_cols_sym, symb_only_names)
+
+shared_feats_sym_host <- Venn(comb_list_sym_host)
+
+shared_feats_sym_host_vis <- ggVennDiagram(comb_list_sym_host, 
+                            category.names = c("Symbiotic-only", "Symbiont-only"),
+                            label_color = "white") +
+  coord_flip()
+shared_feats_sym_host_vis
+```

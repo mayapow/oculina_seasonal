@@ -372,6 +372,7 @@ ggplot(iso_ocu_div, aes(x = Entropy, y= diff_13C, color = depth_sa.x))+
 ```{r}
 
 host_only_names <- names(num_df_ocu_host_only)
+symb_only_names <- names(num_df_ocu_symb_only)
 # "x22863_768_59077_10_971"
 
 
