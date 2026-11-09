@@ -353,7 +353,7 @@ scatter plot: metabolite diversity vs (H-S) 15n
 
 ```{r}
 iso_ocu_div <- iso_ocu_merge |>
-  left_join(ocu_fin_div[,c(13, 22:24)], by = "sample_id")
+  full_join(ocu_fin_div[,c(9, 13, 22:24)], join_by("sample_id" == "id"))
 ```
 
 ```{r}
@@ -380,6 +380,7 @@ host_only_with_id <- num_df_ocu_host_only |>
 
 metadata_ocu_fin <- iso_ocu_div |>
   select(sample_id,
+         sample_id.y,
          ug_chla_cm,
          sym_cm2,
          chla_pg_sym,
@@ -393,9 +394,21 @@ metadata_ocu_fin <- iso_ocu_div |>
          Richness,
          Entropy,
          Evenness)
-
-iso_ocu_div_host <- host_only_with_id |>
-  left_join(metadata_ocu_fin, by = "sample_id")
+metadata_ocu_fin_no_div <- metadata_ocu_fin |>
+  select(
+    sample_id,
+    sample_id.y,
+         ug_chla_cm,
+         sym_cm2,
+         chla_pg_sym,
+         depth_sa.y,
+         d15N,
+         d13C,
+         diff_15N,
+         diff_13C,
+         sum_15N,
+         sum_13C
+  )
 ```
 
 ```{r}

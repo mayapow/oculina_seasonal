@@ -660,10 +660,10 @@ apo_only_df_abundance <- oculina_final[ ,c(40:16396)] %>%
 apo_only_df_abundance_long <- apo_only_df_abundance[77,-c(1037)] |>
   pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
   arrange(desc(Abundance)) |>
-  slice_head(n = 50)
+  slice_head(n = 25)
 ```
 
-```{r, fig.height = 8}
+```{r}
 var_abundance_apo <- apo_only_df_abundance_long |>
   inner_join(feats_with_classes, join_by(feature == metabolite)) |>
   select(feature, 
@@ -695,5 +695,14 @@ ggplot(var_abundance_apo,
 
 ```{r}
 
+#ocu_final_abund <- oculina_final %>%
+#  bind_rows(
+#    summarise(., 
+#              Name = "Total_abundance", 
+#              across(where(is.numeric), sum))
+#  )
 
+ocu_final_abund_long <- ocu_final_abund[77,-c(1:39, 16397:16427)] |>
+  pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
+  arrange(desc(Abundance))
 ```

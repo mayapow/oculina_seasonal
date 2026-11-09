@@ -223,5 +223,148 @@ write.csv(symb_only_with_id, file = "oculina_symb_only_id.csv")
 ```
 
 ```{r}
+host_only_div <- read.csv("oculina_host_only_id.csv")
+symb_only_div <- read.csv("oculina_symb_only_id.csv")
+```
 
+```{r}
+host_div_iso <- host_only_div |>
+  left_join(metadata_ocu_fin_no_div, join_by("sample_id" == "sample_id.y"))
+
+symb_div_iso <- symb_only_div |>
+  left_join(metadata_ocu_fin_no_div, join_by("sample_id" == "sample_id.y"))
+```
+
+```{r}
+ggplot(host_div_iso, aes(x = Richness, y= diff_13C, color = depth_sa.y))+
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") +
+  labs(title = "Host-only")
+
+ggplot(host_div_iso, aes(x = Entropy, y= diff_13C, color = depth_sa.y))+
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") +
+  labs(title = "Host-only")
+
+
+```
+
+```{r}
+ggplot(symb_div_iso, aes(x = Richness, y= diff_13C, color = depth_sa.y))+
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") +
+  labs(title = "Symbiont-only")
+
+ggplot(symb_div_iso, aes(x = Entropy, y= diff_13C, color = depth_sa.y))+
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") +
+  labs(title = "Symbiont-only")
+
+
+```
+
+```{r}
+
+```
+
+```{r}
+feature_ids <- names(oculina_final)[startsWith(names(oculina_final), "x")]
+
+met_universe <- feats_with_classes %>%
+ filter(metabolite %in% feature_ids) %>%
+  distinct(metabolite, .keep_all = TRUE)
+
+
+target_ids <- intersect(feature_ids, names(sym_only_df))
+
+```
+
+```{r}
+
+
+fisher_class_enrichment <- function(target_ids, background_df) {
+
+  background_ids <- unique(background_df$metabolite)
+
+  target_ids <- intersect(unique(target_ids), background_ids)
+
+  remainder_ids <- setdiff(background_ids, target_ids)
+
+  target_df <- background_df %>%
+    filter(metabolite %in% target_ids)
+
+  remainder_df <- background_df %>%
+    filter(metabolite %in% remainder_ids)
+
+  all_classes <- sort(unique(background_df$compound_class))
+
+  map_dfr(all_classes, function(current_class) {
+
+    target_class_n <- sum(
+      target_df$compound_class == current_class,
+      na.rm = TRUE
+    )
+
+    target_other_n <- nrow(target_df) - target_class_n
+
+    remainder_class_n <- sum(
+      remainder_df$compound_class == current_class,
+      na.rm = TRUE
+    )
+
+    remainder_other_n <- nrow(remainder_df) - remainder_class_n
+
+    contingency_table <- matrix(
+      c(
+        target_class_n,
+        target_other_n,
+        remainder_class_n,
+        remainder_other_n
+      ),
+      nrow = 2,
+      byrow = TRUE
+    )
+
+    test <- fisher.test(
+      contingency_table,
+      alternative = "greater"
+    )
+
+    tibble(
+      compound_class = current_class,
+      count_in_sym = target_class_n,
+      total_sym_features = length(target_ids),
+      count_in_background = remainder_class_n,
+      total_background_features = length(remainder_ids),
+      odds_ratio = unname(test$estimate),
+      p_value = test$p.value
+    )
+
+  }) %>%
+
+    mutate(
+      p_adj = p.adjust(p_value, method = "BH"),
+      enriched = odds_ratio > 1 & p_adj < 0.05
+    ) %>%
+
+    arrange(p_adj)
+}
+
+```
+
+```{r}
+class_enrichment_results <- fisher_class_enrichment(
+  target_ids = target_ids,
+  background_df = met_universe
+)
+
+# View significant enrichments
+significant_enrichments <- class_enrichment_results %>%
+  filter(enriched)
+
+print(significant_enrichments, n = Inf)
 ```
