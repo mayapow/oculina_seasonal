@@ -351,7 +351,7 @@ sig_feat_phen_joined <- log2FC_df |>
 
 sig_feat_phen_plot <- sig_feat_phen_joined |>
   arrange(desc(metabolite.MeanDecreaseAccuracy)) |>
-  slice_head(n = 50)
+  slice_head(n = 25)
 
 ggplot(sig_feat_phen_plot, 
        aes(x = reorder(metabolite.Feature, `metabolite.MeanDecreaseAccuracy`), 
@@ -361,7 +361,7 @@ ggplot(sig_feat_phen_plot,
   geom_col(
     ) +
   
-  scale_fill_manual(values = c("#C969A1FF", "#CE4441FF", "#EE8577FF", "#EB7926FF", "#FFBB44FF", "#859B6CFF", "#62929AFF", "#004F63FF", "#122451FF")
+  scale_fill_manual(values = named_palette)
 ) +
   
   coord_flip() +  # Flip for better readability
@@ -375,11 +375,11 @@ ggplot(sig_feat_phen_plot,
 rfpermute regression by chlorophyll **on oculina_final:**:
 
 ```{r}
-rfp_chlor <- rfPermute(chla ~., data = num_df_final_chla, na.action = na.omit, ntree = 1000, num.rep = 200)
+#rfp_chlor <- rfPermute(chla ~., data = num_df_final_chla, na.action = na.omit, ntree = 1000, num.rep = 200)
 
 rfp_chlor
 
-rfp_table_chlor <- as.data.frame(importance(rfp_chlor))  # Convert to a data frame
+#rfp_table_chlor <- as.data.frame(importance(rfp_chlor))  # Convert to a data frame
 rfp_table_chlor <- tibble::rownames_to_column(rfp_table_chlor, var = "Feature")
 print(rfp_table_chlor)  # Display in console
 
@@ -438,7 +438,7 @@ library(ggpattern)
 significant_features_chlor_plot <- log2FC_df_chlor |>
   arrange(desc(`metabolite.X.IncMSE`)) |>
   mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic")) |>
-  slice_head(n = 50) 
+  slice_head(n = 25) 
 
 significant_features_chlor_plot <- significant_features_chlor_plot |>
   inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
@@ -457,22 +457,30 @@ significant_features_chlor_plot <- significant_features_chlor_plot |>
 
 ```
 
-```{r, fig.height = 10, fig.width = 10}
+```{r}
 ggplot(significant_features_chlor_plot, 
        aes(x = reorder(metabolite.Feature, `metabolite.X.IncMSE`), 
            y = `metabolite.X.IncMSE`,
-           fill = compound_class,
-           pattern = Sign
+           fill = compound_class
            )) +
+  
+  geom_col() +
  # scale_fill_manual(values = c("Bleached" = "orange", "Non-Bleached" = "blue")) +
-  geom_col_pattern(
-  pattern_density = 0.2,
-  pattern_spacing = 0.03
-  ) +
+#  geom_col_pattern(
+#  pattern_density = 0.2,
+#  pattern_spacing = 0.03
+#  ) +
   
   
-  scale_fill_manual(values = c("#FBE183FF", "#F4C40FFF", "#FE9B00FF", "#D8443CFF", "#9B3441FF", "#DE597CFF", "#E87B89FF", "#E6A2A6FF", "#AA7AA1FF", "#9F5691FF", "#633372FF", "#1F6E9CFF", "#2B9B81FF", "#92C051FF")
-
+  scale_fill_manual(values = c("Betaine lipids (Lyso-DGCC)" = "#C969A1FF", 
+                              "Diacylglycerols" = "#CE4441FF", 
+                               "Digalactosyldiacylglycerols (DGDG)" = "#EE8577FF",
+                               "Glycerophosphoethanolamines" = "#EB7926FF", 
+                              "Monogalactosyldiacylglycerols (MGDG)" ="#FFBB44FF", 
+                              "Neutral glycosphingolipids" = "#859B6CFF", 
+                               "Oxidized glycerophospholipids" = "#62929AFF", 
+                               "#004F63FF", 
+                               "Unknown" = "#122451FF")
 ) +
   geom_text(aes(label = Symbol), vjust = 0, hjust = 0, size = 4) +
   
@@ -559,7 +567,8 @@ oculina_final <- read.csv("../Data/Metabolomics/oculina_final.csv")
 ```{r}
 shared_feats_long <- shared_feats_apo_sym_df[77,-c(13578)] |>
   pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
-  arrange(desc(Abundance)) 
+  arrange(desc(Abundance)) |>
+  slice_head(n = 25)
 ```
 
 ```{r}
@@ -595,7 +604,7 @@ ggplot(var_abundance_shared,
 ```{r}
 
 
-unique_cols <- setdiff(names(oculina_sym), names(oculina_apo))
+unique_cols_sym <- setdiff(names(oculina_sym), names(oculina_apo))
 
 sym_only_df <- oculina_sym[, unique_cols]
   
@@ -612,7 +621,7 @@ sym_only_df_abundance <- oculina_final[ ,c(40:16396)] %>%
 sym_only_df_abundance_long <- sym_only_df_abundance[77,-c(1715)] |>
   pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
   arrange(desc(Abundance)) |>
-  slice_head(n = 50)
+  slice_head(n = 25)
 ```
 
 ```{r}
@@ -705,4 +714,8 @@ ggplot(var_abundance_apo,
 ocu_final_abund_long <- ocu_final_abund[77,-c(1:39, 16397:16427)] |>
   pivot_longer(everything(), names_to = "feature", values_to = "Abundance") |>
   arrange(desc(Abundance))
+```
+
+```{r}
+feats_with_classes <- feats_with_classes
 ```

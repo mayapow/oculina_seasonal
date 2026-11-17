@@ -440,3 +440,14 @@ shared_feats_sym_host_vis <- ggVennDiagram(comb_list_sym_host,
   coord_flip()
 shared_feats_sym_host_vis
 ```
+
+```{r}
+all_four_list <- list(unique_cols_sym, symb_only_names, unique_cols_apo, host_only_names)
+
+shared_feats_all_four <- Venn(all_four_list)
+
+shared_feats_all_four_vis <- ggVennDiagram(all_four_list, 
+                            category.names = c("Symbiotic-only", "Symbiont-derived", "Aposymbiotic-only", "Host-derived"),
+                            label_color = "white")
+shared_feats_all_four_vis
+```

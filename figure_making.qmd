@@ -1,0 +1,93 @@
+---
+title: "fig_making"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+
+library(stringr)
+library(tidyr)
+library(paletteer)
+library(cowplot)
+```
+
+You can add options to executable code like this
+
+```{r}
+#"Unknown",
+"Digalactosyldiacylglycerols (DGDG)",
+"Open-chain polyketides",
+"Guaiane sesquiterpenoids",
+"Carotenoids (C40, Î²-Î²)",
+"Microcystins",      
+"Betaine lipids (DGCC)",    
+"Ceramides",      
+"Cholestane steroids",        
+"Triacylglycerols",       
+"Polyprenol derivatives" ,        
+"Cyclic peptides",
+"Monogalactosyldiacylglycerols (MGDG)",
+"Neutral glycosphingolipids",
+"Diacylglycerols",
+"Glycerophosphoethanolamines",
+"Oxidized glycerophospholipids",
+"Glycerophosphocholines",
+"Glycosyldiacylglycerols",
+"Sulfoquinovosyldiacylglycerols",
+"N-acyl amines",
+"Prenyl quinone meroterpenoids"
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+```{r}
+cc_names <- c(
+"Unknown",
+"Digalactosyldiacylglycerols (DGDG)",
+"Open-chain polyketides",
+"Guaiane sesquiterpenoids",
+"Carotenoids (C40, Î²-Î²)",
+"Microcystins",      
+"Betaine lipids (DGCC)",    
+"Ceramides",      
+"Cholestane steroids",        
+"Triacylglycerols",       
+"Polyprenol derivatives" ,        
+"Cyclic peptides",
+"Monogalactosyldiacylglycerols (MGDG)",
+"Neutral glycosphingolipids",
+"Diacylglycerols",
+"Glycerophosphoethanolamines",
+"Oxidized glycerophospholipids",
+"Glycerophosphocholines",
+"Glycosyldiacylglycerols",
+"Sulfoquinovosyldiacylglycerols",
+"N-acyl amines",
+"Prenyl quinone meroterpenoids"
+)
+
+# 2. Extract the exact number of colors needed from a paletteer palette
+# Format syntax: "package::palette"
+my_colors <- paletteer_d("dichromat::SteppedSequential_5", n = length(cc_names))
+
+# 3. Pair the names with the colors using setNames()
+named_palette <- setNames(as.character(my_colors), cc_names)
+
+
+```
+
+```{r}
+print(named_palette)
+```

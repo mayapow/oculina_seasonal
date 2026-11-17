@@ -19,6 +19,7 @@ library(dplyr)
 library(vegan)
 library(stringr)
 library(tidyr)
+library(rfPermute)
 ```
 
 You can add options to executable code like this
@@ -422,5 +423,191 @@ ggplot(iso_ocu_div_host, aes(x = Entropy, y= diff_15N, color = depth_sa.x))+
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, color = "black") +
   stat_cor(aes(group = 1), method = "pearson", label.x.npc = "left", label.y.npc = "top") 
+
+```
+
+```{r}
+#num_df_iso_n15_host <- host_div_iso[,-c(1266:1277, 1279:1281)]
+#rfp_iso_n15_host <- rfPermute(diff_15N ~., data = num_df_iso_n15_host, na.action = na.omit, ntree = 500, num.rep = 100)
+
+#print(rfp_iso_n15_host)
+rfp_iso_n15_host_obj <- as.randomForest(rfp_iso_n15_host)
+
+rfp_iso_n15_host_obj$rsq
+#rfp_iso_n15_host_obj$mse
+
+rfp_table_iso_n15_host <- as.data.frame(importance(rfp_iso_n15_host))  # Convert to a data frame
+rfp_table_iso_n15_host <- tibble::rownames_to_column(rfp_table_iso_n15_host, var = "Feature")
+#print(rfp_iso_n15_host)  # Display in console
+
+sig_feats_n15_host <- rfp_table_iso_n15_host %>% filter(`%IncMSE.pval` < 0.05)  # Adjust p-value threshold as needed
+
+#print(sig_feats_n15_host)
+```
+
+```{r}
+sig_rows_n15_host <- sig_feats_n15_host$Feature
+
+num_df_sig_n15_host <- data.matrix(num_df_final |>
+  select(all_of(sig_rows_n15_host)))
+
+log2FC_n15_host <- sapply(sig_rows_n15_host, function(met){
+  
+  B_vals  <- (num_df_sig_n15_host[ocu_final$bleaching == "B", met])
+  NB_vals <- (num_df_sig_n15_host[ocu_final$bleaching == "NB", met])
+
+  mean_B  <- mean(B_vals,  na.rm = TRUE)
+  mean_NB <- mean(NB_vals, na.rm = TRUE)
+
+  log2(mean_B / mean_NB)
+})
+
+log2FC_n15_df_host <- data.frame(
+  metabolite = sig_feats_n15_host,
+  log2FC = log2FC_n15_host
+)
+
+
+```
+
+```{r}
+sig_feat_n15_joined_host <- log2FC_n15_df_host |>
+  inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
+  select(metabolite.Feature, 
+         `metabolite..IncMSE`, 
+         compound_class, 
+         origin, 
+         npc_number_superclass,
+         log2FC) |>
+     mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic"))
+
+sig_feat_n15_plot_host <- sig_feat_n15_joined_host |>
+  arrange(desc(`metabolite..IncMSE`)) |>
+  slice_head(n = 25)
+
+ggplot(sig_feat_n15_plot_host, 
+       aes(x = reorder(metabolite.Feature, `metabolite..IncMSE`), 
+           y = `metabolite..IncMSE`,
+           fill = compound_class,
+           pattern = Sign
+           )) +
+  
+  geom_col_pattern(
+  pattern_density = 0.2,
+  pattern_spacing = 0.03
+  ) +
+  
+  scale_fill_manual(values = c("#C969A1FF", "#CE4441FF", "#EE8577FF", "#EB7926FF", "#FFBB44FF", "#859B6CFF", "#62929AFF", "#004F63FF", "#122451FF")
+) +
+  
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Importance after rfPermute for n15 difference regression of host-only features",
+       x = "Feature",
+       y = "% Increase MSE") +
+  theme_minimal()
+
+```
+
+```{r}
+num_df_iso_n15_symb <- symb_div_iso[,-c(5965:5975, 5977:5979)]
+rfp_iso_n15_symb <- rfPermute(diff_15N ~., data = num_df_iso_n15_symb, na.action = na.omit, ntree = 500, num.rep = 100)
+
+#print(rfp_iso_n15_host)
+rfp_iso_n15_symb_obj <- as.randomForest(rfp_iso_n15_symb)
+
+#rfp_iso_n15_symb_obj$rsq
+#rfp_iso_n15_symb_obj$mse
+
+rfp_table_iso_n15_symb <- as.data.frame(importance(rfp_iso_n15_symb))  # Convert to a data frame
+rfp_table_iso_n15_symb <- tibble::rownames_to_column(rfp_table_iso_n15_symb, var = "Feature")
+#print(rfp_iso_n15_host)  # Display in console
+
+sig_feats_n15_symb <- rfp_table_iso_n15_symb %>% filter(`%IncMSE.pval` < 0.05)  # Adjust p-value threshold as needed
+
+#print(sig_feats_n15_host)
+```
+
+```{r}
+sig_rows_n15_symb <- sig_feats_n15_symb$Feature
+
+num_df_sig_n15_symb <- data.matrix(num_df_final |>
+  select(all_of(sig_rows_n15_symb)))
+
+log2FC_n15_symb <- sapply(sig_rows_n15_symb, function(met){
+  
+  B_vals  <- (num_df_sig_n15_symb[ocu_final$bleaching == "B", met])
+  NB_vals <- (num_df_sig_n15_symb[ocu_final$bleaching == "NB", met])
+
+  mean_B  <- mean(B_vals,  na.rm = TRUE)
+  mean_NB <- mean(NB_vals, na.rm = TRUE)
+
+  log2(mean_B / mean_NB)
+})
+
+log2FC_n15_df_symb <- data.frame(
+  metabolite = sig_feats_n15_symb,
+  log2FC = log2FC_n15_symb
+)
+
+
+```
+
+```{r}
+sig_feat_n15_joined_symb <- log2FC_n15_df_symb |>
+  inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
+  select(metabolite.Feature, 
+         `metabolite..IncMSE`, 
+         compound_class, 
+         origin, 
+         npc_number_superclass,
+         log2FC) |>
+     mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic"))
+
+sig_feat_n15_plot_symb <- sig_feat_n15_joined_symb |>
+  arrange(desc(`metabolite..IncMSE`)) |>
+  slice_head(n = 25)
+
+ggplot(sig_feat_n15_plot_symb, 
+       aes(x = reorder(metabolite.Feature, `metabolite..IncMSE`), 
+           y = `metabolite..IncMSE`,
+           fill = compound_class,
+           pattern = Sign
+           )) +
+  
+  geom_col_pattern(
+  pattern_density = 0.2,
+  pattern_spacing = 0.03
+  ) +
+  
+  scale_fill_manual(values = c("#C969A1FF", "#CE4441FF", "#EE8577FF", "#EB7926FF", "#FFBB44FF", "#859B6CFF", "#62929AFF", "#004F63FF", "#122451FF")
+) +
+  
+  coord_flip() +  # Flip for better readability
+  labs(title = "Variable Importance after rfPermute for n15 difference regression of symbiont-only features",
+       x = "Feature",
+       y = "% Increase MSE") +
+  theme_minimal()
+
+```
+
+```{r}
+comp_class_names_phen <- list(unique(
+  sig_feat_dep_plot$compound_class, 
+  sig_feat_phen_joined$compound_class,
+  fromLast = FALSE)
+  )
+
+comp_class_names_phys <- list(unique(
+  significant_features_sym_plot$compound_class,
+  significant_features_chlor_plot$compound_class
+)
+  
+)
+#sig_feat_n15_joined$compound_class,
+#comp_class_names_phen
+#comp_class_names_phys
+
+comp_class_names <- unique(comp_class_names_phen, comp_class_names_phys)
+comp_class_names
 
 ```

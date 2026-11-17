@@ -105,7 +105,7 @@ log2FC_df_sym_upInB <- log2FC_df_sym |>
 significant_features_sym_plot <- log2FC_df_sym |>
   arrange(desc(`metabolite.X.IncMSE`)) |>
   mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic")) |>
-  slice_head(n = 50)
+  slice_head(n = 25)
 
 significant_features_sym_plot <- significant_features_sym_plot |>
   inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
@@ -127,7 +127,7 @@ significant_features_sym_plot <- significant_features_sym_plot |>
 
 ```
 
-```{r, fig.height = 10, fig.width = 10}
+```{r}
 
 library(ggpattern)
 
