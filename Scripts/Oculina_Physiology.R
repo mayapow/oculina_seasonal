@@ -615,8 +615,8 @@ isotope_combined <- bind_rows(
 
 # Colors for host and algae
 tissue_cols <- c(
-  "Host" = "navy",
-  "Algae" = "hotpink2")
+  "Host" = "#52414C",
+  "Algae" = "#678D58")
 
 
 # Function to make the same plot for each treatment
