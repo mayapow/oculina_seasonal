@@ -25,7 +25,6 @@ library(SIBER)
 #install.packages("sf")
 library(sf)
 
-
 #===Isotopes, 4 plots: Host C and N, Algae C and N====
 #organizing data
 # function to calculate standard error (SE)
@@ -49,9 +48,9 @@ algae$depth_sa <- factor(
 
 # assign colors
 depth_cols <- c(
-  "Deep Aposymbiotic" = "cyan3",
-  "Shallow Aposymbiotic" = "hotpink2",
-  "Shallow Symbiotic" = "navy"
+  "Deep Aposymbiotic" = "#CD6090",
+  "Shallow Aposymbiotic" = "#FFA500",
+  "Shallow Symbiotic" = "#0000FF"
 )
 
 #===HOST d13C by depth/sym or apo PLOT====
@@ -427,7 +426,7 @@ final_plot
 
 # Save larger so points and labels are visible
 ggsave(
-  here("Output", "Nov_2024","isotopes","isotope_four_panel_plot.jpg"),
+  here("Output", "Nov_2024","isotopes","correct_colors","isotope_four_panel_plot.jpg"),
   final_plot,
   width = 18,
   height = 12,
@@ -462,7 +461,7 @@ host_CN_plot <- ggplot(host,
 #call plot and save
 host_CN_plot
 ggsave(
-  filename = here("Output", "Nov_2024", "host_CN_scatterplot.pdf"),
+  filename = here("Output", "Nov_2024", "isotopes", "correct_colors", "host_CN_scatterplot.jpg"),
   plot = host_CN_plot,
   width = 6,
   height = 6,
@@ -490,7 +489,7 @@ algae_CN_plot <- ggplot(
 
 algae_CN_plot
 ggsave(
-  filename = here("Output", "Nov_2024", "algae_CN_scatterplot.pdf"),
+  filename = here("Output", "Nov_2024", "isotopes", "correct_colors", "algae_CN_scatterplot.pdf"),
   plot = algae_CN_plot,
   width = 6,
   height = 6,
@@ -502,9 +501,9 @@ library(ggplot2)
 library(dplyr)
 
 depth_cols <- c(
-  "Deep Aposymbiotic" = "cyan3",
-  "Shallow Aposymbiotic" = "hotpink2",
-  "Shallow Symbiotic" = "navy"
+  "Deep Aposymbiotic" = "#CD6090",
+  "Shallow Aposymbiotic" = "#FFA500",
+  "Shallow Symbiotic" = "#0000FF"
 )
 
 # HOST ISOTOPE PLOT
@@ -1175,9 +1174,8 @@ sapply(sym_chla, class)
 #convert any variables to correct classes as needed - see example here
 sym_chla <- sym_chla %>% mutate_at(c('ug_chla_cm'), as.numeric)
 
-#########
 
-#read in SEASONAL DATAFRAME & remove samples w/ no data
+#===read in SEASONAL DATAFRAME & remove samples w/ no data====
 sym_chla <- read.csv(here("Data", "Seasonal", "sym_chla_oculina_seasonal.csv"))
 meta <- read.csv(here("Data", "Seasonal", "oculina_seasonal_metadata.csv"))
 
@@ -1208,7 +1206,7 @@ sym_chla <- sym_chla %>%
   ))
 str(sym_chla$month)
 
-###Seasonal Timepoint Chla cm^2 box plot
+#===Seasonal Timepoint Chla cm^2 box plot====
 chla_time_box <- ggplot(sym_chla, aes(x = timepoint, y = ug_chla_cm, fill = timepoint)) +
   geom_boxplot() +
   geom_jitter(alpha = 0.8, width = 0.2) +
@@ -1219,8 +1217,7 @@ chla_time_box <- ggplot(sym_chla, aes(x = timepoint, y = ug_chla_cm, fill = time
 
 chla_time_box
 
-#========
-#3 panel plot w sym density, chla/cm2, chla/symbiont
+#===3 panel plot w sym density, chla/cm2, chla/symbiont====
 
 library(dplyr)
 library(ggplot2)
@@ -1283,7 +1280,7 @@ three_panel
 #save plot
 ggsave(three_panel, file = "three_panel.pdf", h=6, w=6) #change height and width and resave as needed
 
-###STATS FOR 3 PANEL
+#===STATS FOR 3 PANEL====
 #sym density
 sym_aov <- aov(sym_cm2 ~ timepoint, data = sym_chla)
 summary(sym_aov)
