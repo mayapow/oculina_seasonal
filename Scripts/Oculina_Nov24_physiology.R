@@ -220,9 +220,9 @@ chla_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=ug_chla_cm, fill =
   theme(legend.position = "none")+
   ylim(-0.2,7)+ #ELLA - EDIT Y LIMIT IF IT CUTS OFF LETTERS ON THE TOP
   #MAKE SURE YOU DON'T GET THE WARNING THAT IT REMOVES ANY DATA (here, when I put Y=0, it got rid of a few)
-  scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
+  scale_fill_manual(values = c("#CD6090","#FFA500","#0000FF")) #ella change the colors here as you'd like
 chla_nov_depth_sa_box
-ggsave(here("Output", "Nov_2024","chla_nov_depth_sa_box.jpg"), device = "jpg", h = 6, w = 10, chla_nov_depth_sa_box)
+ggsave(here("Output", "Nov_2024","chl a", "correct_colors", "chla_nov_depth_sa_box.jpg"), device = "jpg", h = 6, w = 10, chla_nov_depth_sa_box)
 
 #chla per symbiont
 chla_sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=chla_pg_sym, fill = depth_sa))+
@@ -233,27 +233,29 @@ chla_sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=chla_pg_sym, f
                label = c("a", "a", "b"))+ 
   labs(x = "Fragment symbiotic state", y = "Chlorophyll a (pg per symbiont cell)")+
   theme(legend.position = "none")+
-  scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
+  scale_fill_manual(values = c("#CD6090","#FFA500","#0000FF")) #ella change the colors here as you'd like
 chla_sym_nov_depth_sa_box
-ggsave(here("Output", "Nov_2024","chla_sym_nov_depth_sa_box.jpg"), device = "jpg", h = 6, w = 10, chla_sym_nov_depth_sa_box)
+ggsave(here("Output", "Nov_2024","chl a", "correct_colors","chla_sym_nov_depth_sa_box.jpg"), device = "jpg", h = 6, w = 10, chla_sym_nov_depth_sa_box)
 
 #symbiont density
-sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y=sym_cm2, fill = depth_sa))+
-  geom_boxplot()+
-  geom_jitter(alpha=0.8, width=0.2)+
-  theme_classic(base_size = 22)+
-  labs(x = "Fragment symbiotic state", y = "Symbiont density (cells per cm2)")+
-  stat_summary(data = sym_chla, aes(x = depth_sa, y = ug_chla_cm), geom = "text", fun = max, vjust = -0.5, size = 8,
-               label = c("a", "b", "b"))+ 
-  theme(legend.position = "none")+
-  scale_fill_manual(values = c("white","lightyellow","brown")) #ella change the colors here as you'd like
+sym_nov_depth_sa_box <- ggplot(sym_chla, aes(x = depth_sa, y = sym_cm2, fill = depth_sa)) +
+  geom_boxplot(outlier.shape = NA) +   # hides boxplot outlier dots so they don't double up with the jitter
+  geom_jitter(alpha = 0.8, width = 0.2) +
+  stat_summary(geom = "text", fun = function(x) max(x, na.rm = TRUE),
+               vjust = -0.5, size = 8,
+               label = c("a", "b", "b")) +
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.12))) +   # headroom so letters aren't clipped
+  theme_classic(base_size = 22) +
+  labs(x = "Fragment symbiotic state", y = expression("Symbiont density (cells"~cm^{-2}*")")) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c("#CD6090", "#FFA500", "#0000FF"))
 sym_nov_depth_sa_box
-ggsave(here("Output", "Nov_2024","sym_nov_depth_sa_box.jpg"), device = "jpg", h = 6, w = 10, sym_nov_depth_sa_box)
+ggsave(here("Output", "Nov_2024","chl a", "correct_colors","sym_nov_depth_sa_box.jpg"), device = "jpg", h = 6, w = 10, sym_nov_depth_sa_box)
 
 #linear plot comparing symbiont density vs chlorophyll a across all 3 groups
 sym_chla_scatter <- ggplot(sym_chla, aes(x = sym_cm2, y = ug_chla_cm, fill = depth_sa)) +
   geom_point(color='black', shape = 21) +
-  scale_fill_manual(values = c("white","lightyellow","brown"))+
+  scale_fill_manual(values = c("#CD6090","#FFA500","#0000FF"))+
   theme_bw(base_size = 22) +
   geom_smooth(aes(x = sym_cm2, y = ug_chla_cm, group = 1),
               method = "lm", se = TRUE, color = "black", linewidth = 1.1) +
@@ -261,7 +263,7 @@ sym_chla_scatter <- ggplot(sym_chla, aes(x = sym_cm2, y = ug_chla_cm, fill = dep
        y = "Chlorophyll a (ug per cm2)", 
        fill = "Fragment symbiotic state")
 sym_chla_scatter
-#ggsave(here("Output", "Nov_2024","sym_chla_scatter.jpg"), device = "jpg", h = 6, w = 10, sym_chla_scatter)
+#ggsave(here("Output", "Nov_2024","chl a", "correct_colors","sym_chla_scatter.jpg"), device = "jpg", h = 6, w = 10, sym_chla_scatter)
 ggsave(
   filename = here("Output", "Nov_2024", "sym_chla_scatter.jpg"),
   plot     = sym_chla_scatter,
