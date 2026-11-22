@@ -16,7 +16,13 @@ library(ggpubr)
 
 ```{r}
 
-feats_with_classes <- read_excel("C:/Users/priya/Downloads/Ty_superset_metabolites.xlsx")
+feats_with_classes <- read.csv("C:/Users/priya/Downloads/Ty_superset_metabolites_coraldb_updated.csv")
+```
+
+```{r}
+feats_stats <- feats_with_classes |>
+  group_by(compound_superclass) |>
+  summarise(sum = n())
 ```
 
 ```{r}
@@ -259,15 +265,16 @@ letters_df_richness <- data.frame(
 
 **In Poster**
 
-```{r, fig.width = 8}
+```{r}
 #ocu_fin_div_depthsa <- ocu_fin_div_depthsa |>
  # filter(!is.na(depth_sa))
-ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness, fill = depth_sa)) +
+richness_3_cat_box <- ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness, fill = depth_sa)) +
   geom_boxplot(outlier.shape = NA) +
   
   scale_fill_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "hotpink3")) +
   
   theme_classic(base_size = 14) +
+  theme(legend.position = "none") +
   
   #theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
 
@@ -292,6 +299,8 @@ geom_text(data = letters_df_richness, aes(x = group, y = Inf, label = letter, vj
     y = "Metabolite Richness",
     fill = "Fragment symbiotic state"
   ) 
+
+richness_3_cat_box
 ```
 
 ```{r}
@@ -442,6 +451,10 @@ shared_feats_sym_host_vis
 ```
 
 ```{r}
+
+symb_only_names <- colnames(num_df_ocu_symb_only)
+host_only_names <- colnames(num_df_ocu_host_only)
+
 all_four_list <- list(unique_cols_sym, symb_only_names, unique_cols_apo, host_only_names)
 
 shared_feats_all_four <- Venn(all_four_list)
@@ -450,4 +463,28 @@ shared_feats_all_four_vis <- ggVennDiagram(all_four_list,
                             category.names = c("Symbiotic-only", "Symbiont-derived", "Aposymbiotic-only", "Host-derived"),
                             label_color = "white")
 shared_feats_all_four_vis
+```
+
+investigating these 272 symbiont-derived aposymbiotic-unique features:
+
+```{r}
+symb_derived_apo_names <- intersect(symb_only_names, unique_cols_apo)
+ocu_symb_der_apo <- oculina_final |>
+  select(1:28, all_of(unlist(symb_derived_apo_names)), 16398:16426)
+
+symb_der_apo_feats <- feats_with_classes |>
+  filter(feats_with_classes$metabolite %in% unlist(symb_derived_apo_names))
+```
+
+```{r}
+#how many features are there in each compound class?
+comp_classes_symb_der_apo <- symb_der_apo_feats |>
+  group_by(compound_class) |>
+  summarise(sum = n())
+
+comp_classes_symb_der_apo_known <- comp_classes_symb_der_apo |>
+  filter(compound_class != "Unknown")
+
+ggplot(comp_classes_symb_der_apo_known, aes(x = sum, y = compound_class)) +
+  geom_col()
 ```

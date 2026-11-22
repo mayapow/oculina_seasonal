@@ -26,28 +26,7 @@ library(cowplot)
 You can add options to executable code like this
 
 ```{r}
-#"Unknown",
-"Digalactosyldiacylglycerols (DGDG)",
-"Open-chain polyketides",
-"Guaiane sesquiterpenoids",
-"Carotenoids (C40, Î²-Î²)",
-"Microcystins",      
-"Betaine lipids (DGCC)",    
-"Ceramides",      
-"Cholestane steroids",        
-"Triacylglycerols",       
-"Polyprenol derivatives" ,        
-"Cyclic peptides",
-"Monogalactosyldiacylglycerols (MGDG)",
-"Neutral glycosphingolipids",
-"Diacylglycerols",
-"Glycerophosphoethanolamines",
-"Oxidized glycerophospholipids",
-"Glycerophosphocholines",
-"Glycosyldiacylglycerols",
-"Sulfoquinovosyldiacylglycerols",
-"N-acyl amines",
-"Prenyl quinone meroterpenoids"
+
 ```
 
 The `echo: false` option disables the printing of code (only output is displayed).
@@ -55,7 +34,7 @@ The `echo: false` option disables the printing of code (only output is displayed
 ```{r}
 cc_names <- c(
 "Unknown",
-"Digalactosyldiacylglycerols (DGDG)",
+"DGDG",
 "Open-chain polyketides",
 "Guaiane sesquiterpenoids",
 "Carotenoids (C40, Î²-Î²)",
@@ -66,7 +45,7 @@ cc_names <- c(
 "Triacylglycerols",       
 "Polyprenol derivatives" ,        
 "Cyclic peptides",
-"Monogalactosyldiacylglycerols (MGDG)",
+"MGDG",
 "Neutral glycosphingolipids",
 "Diacylglycerols",
 "Glycerophosphoethanolamines",
@@ -90,4 +69,20 @@ named_palette <- setNames(as.character(my_colors), cc_names)
 
 ```{r}
 print(named_palette)
+```
+
+Figure (3?): Two PCoAs and 3-way Richness box plot
+
+```{r}
+#richness_3_cat_box
+#pcoa_oculina_fin_depthsa
+#pcoa_oculina_fin_depthsa_no_out
+
+
+fig3 <- plot_grid(richness_3_cat_box, pcoa_oculina_fin_depthsa, pcoa_oculina_fin_depthsa_no_out, nrow=1, rel_widths=c(1, 1.2, 1.4), align="h", label_size = 8, labels = c("A", "B", "C"))
+
+fig3
+
+ggsave(plot = fig3, "fig3_02.pdf", width=7.2, height=3.0, units=c("in"), dpi=300)
+#print(fig3)
 ```

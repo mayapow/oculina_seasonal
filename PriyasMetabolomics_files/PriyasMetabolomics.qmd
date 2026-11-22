@@ -163,6 +163,7 @@ pcoa_oculina_fin_depthsa <-ggplot(data = pcoa_df_ocu_fin_depthsa, aes(x = PC1, y
   theme_classic(base_size = 14) +
   theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
         ) +
+  theme(legend.position = "none") +
 
   labs(
        x = paste("PC1 ", sprintf("%.1f%%", variance_explained_fin_depthsa[1])),
@@ -208,10 +209,12 @@ pcoa_oculina_fin_depthsa_no_out <-ggplot(data = pcoa_df_ocu_fin_depthsa_no_out, 
     theme_classic(base_size = 14) +
   theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
         ) +
+  #theme(legend.position = "none") +
 
   labs(
        x = paste("PC1 ", sprintf("%.1f%%", variance_explained_fin_depthsa_no_out[1])),
        y = paste("PC2 ", sprintf("%.1f%%", variance_explained_fin_depthsa_no_out[2])),
+       color = "Symbiotic State"
        ) +
   theme(plot.margin=ggplot2::margin(t=8,b=8,r=15,l=20,unit="pt"))
 
@@ -346,8 +349,7 @@ sig_feat_phen_joined <- log2FC_df |>
   select(metabolite.Feature, 
          `metabolite.MeanDecreaseAccuracy`, 
          compound_class, 
-         origin, 
-         npc_number_superclass)
+         refined_origin)
 
 sig_feat_phen_plot <- sig_feat_phen_joined |>
   arrange(desc(metabolite.MeanDecreaseAccuracy)) |>
@@ -361,8 +363,7 @@ ggplot(sig_feat_phen_plot,
   geom_col(
     ) +
   
-  scale_fill_manual(values = named_palette)
-) +
+  scale_fill_manual(values = named_palette) +
   
   coord_flip() +  # Flip for better readability
   labs(title = "Variable Importance after rfPermute for Phenotype Classification",
@@ -446,13 +447,12 @@ significant_features_chlor_plot <- significant_features_chlor_plot |>
          `metabolite.X.IncMSE`, 
          Sign, 
          compound_class, 
-         origin, 
-         npc_number_superclass)
+         refined_origin)
 
 significant_features_chlor_plot <- significant_features_chlor_plot |>
-  mutate(Symbol  = case_when(origin == "host & symbiont" ~ "\U2605",
-                             origin == "symbiont" ~ "\U2713",
-                             origin == "symbiosis-specific" ~ "\U2660"))
+  mutate(Symbol  = case_when(refined_origin == "Both" ~ "\U2605",
+                             refined_origin == "Symbiont" ~ "\U2713",
+                             refined_origin == "Coral" ~ "\U2660"))
 
 
 ```
@@ -472,16 +472,7 @@ ggplot(significant_features_chlor_plot,
 #  ) +
   
   
-  scale_fill_manual(values = c("Betaine lipids (Lyso-DGCC)" = "#C969A1FF", 
-                              "Diacylglycerols" = "#CE4441FF", 
-                               "Digalactosyldiacylglycerols (DGDG)" = "#EE8577FF",
-                               "Glycerophosphoethanolamines" = "#EB7926FF", 
-                              "Monogalactosyldiacylglycerols (MGDG)" ="#FFBB44FF", 
-                              "Neutral glycosphingolipids" = "#859B6CFF", 
-                               "Oxidized glycerophospholipids" = "#62929AFF", 
-                               "#004F63FF", 
-                               "Unknown" = "#122451FF")
-) +
+ scale_fill_manual(values = named_palette) +
   geom_text(aes(label = Symbol), vjust = 0, hjust = 0, size = 4) +
   
   coord_flip() +  # Flip for better readability
@@ -678,7 +669,7 @@ var_abundance_apo <- apo_only_df_abundance_long |>
   select(feature, 
          Abundance, 
          compound_class, 
-         origin, 
+         refined_origin, 
          npc_number_superclass) 
 
 ggplot(var_abundance_apo, 
