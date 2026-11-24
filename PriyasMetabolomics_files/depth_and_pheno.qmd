@@ -66,7 +66,7 @@ log2FC_df_dep <- data.frame(
 
 log2FC_df_dep_meta <- log2FC_df_dep |>
   inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
-  select(metabolite.Feature, metabolite.MeanDecreaseAccuracy, metabolite.MeanDecreaseGini, log2FC, compound_class, origin, npc_number_superclass)
+  select(metabolite.Feature, metabolite.MeanDecreaseAccuracy, metabolite.MeanDecreaseGini, log2FC, compound_superclass, refined_origin, npc_number_superclass)
 ```
 
 ```{r}
@@ -80,24 +80,16 @@ sig_feat_dep_plot <- log2FC_df_dep_meta |>
 ggplot(sig_feat_dep_plot, aes(
   x = reorder(metabolite.Feature, metabolite.MeanDecreaseAccuracy), 
   y = metabolite.MeanDecreaseAccuracy, 
-  fill = compound_class)) +
-  scale_fill_manual(values = c("#C969A1FF", 
-                              "#CE4441FF", 
-                                "#EE8577FF",
-                               "#EB7926FF", 
-                              "#FFBB44FF", 
-                              "#859B6CFF", 
-                               "#62929AFF", 
-                               "#004F63FF", 
-                               "#122451FF")
-) +
+  fill = compound_superclass)) +
+  scale_fill_manual(values = named_palette) +
   
   #scale_pattern_manual(values = c("host & symbiont" = "stripe", "symbiont" = "none", "symbiosis-specific" = "circle")) +
   
   geom_col() +
   coord_flip() +  # Flip for better readability
-  labs(title = "Variable Importance after rfPermute for Depth and Phenotype Classification",
+  labs(title = "Depth and Phenotype Classification",
        x = "Feature",
        y = "Mean Decrease in Accuracy") +
-  theme_minimal()
+  theme_minimal()+
+  theme(legend.position = "none")
 ```

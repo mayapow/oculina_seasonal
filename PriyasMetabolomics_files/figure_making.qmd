@@ -34,27 +34,42 @@ The `echo: false` option disables the printing of code (only output is displayed
 ```{r}
 cc_names <- c(
 "Unknown",
-"DGDG",
-"Open-chain polyketides",
-"Guaiane sesquiterpenoids",
-"Carotenoids (C40, Î²-Î²)",
-"Microcystins",      
-"Betaine lipids (DGCC)",    
-"Ceramides",      
+"Digalactosyldiacylglycerol",
+"Linear polyketides",
+"sesquiterpenoids",
+"Carotenoids (C40)",
+"Oligopeptides",      
+"Diacylglyceryl-carboxyhydroxymethylcholines",    
+"Sphingolipids",      
 "Cholestane steroids",        
 "Triacylglycerols",       
-"Polyprenol derivatives" ,        
-"Cyclic peptides",
-"MGDG",
-"Neutral glycosphingolipids",
+"Polyprenols" ,        
+"Monogalactosyldiacylglycerol",
 "Diacylglycerols",
-"Glycerophosphoethanolamines",
-"Oxidized glycerophospholipids",
-"Glycerophosphocholines",
+"Glycerophospholipids",
 "Glycosyldiacylglycerols",
-"Sulfoquinovosyldiacylglycerols",
 "N-acyl amines",
-"Prenyl quinone meroterpenoids"
+"meroterpenoids",
+"Glycerolipids",
+"Steroids"
+)
+
+stepped_seq_5 <- c(
+  "darkgrey",
+  "#990F0F", "#CC5252", "#E67E7E", "#FFB2B2", # Reds (1:5)
+  "#99700F", "#CCA852", "#E6C77E", "#FFE8B2", # Yellows/Browns (6:10)
+  "#1F990F", "#60CC52", "#8AE67E", "#BCFFB2", # Greens (11:15)
+  "#710F99", "#A852CC", "#C77EE6", "#E9B2FF", # Purples (16:20)
+  "#990F20", "#CC5260", "#E67E8A", "#FFB2BC"  # Crimsons/Roses (21:25)
+)
+
+
+c25 <- c(
+  "gray70","dodgerblue2", "#E31A1C", "green4", "#6A3D9A", "#FF7F00",
+  "black", "gold1", "skyblue2", "#FB9A99", "palegreen2",
+  "#CAB2D6", "#FDBF6F",  "khaki2", "maroon",
+  "orchid1", "deeppink1", "blue1", "steelblue4", "darkturquoise",
+  "green1", "yellow4", "yellow3", "darkorange4", "brown"
 )
 
 # 2. Extract the exact number of colors needed from a paletteer palette
@@ -62,13 +77,19 @@ cc_names <- c(
 my_colors <- paletteer_d("dichromat::SteppedSequential_5", n = length(cc_names))
 
 # 3. Pair the names with the colors using setNames()
-named_palette <- setNames(as.character(my_colors), cc_names)
+named_palette <- setNames(as.character(c25), cc_names)
 
 
 ```
 
 ```{r}
 print(named_palette)
+```
+
+Dummy legend for variable importance plots
+
+```{r}
+
 ```
 
 Figure (3?): Two PCoAs and 3-way Richness box plot

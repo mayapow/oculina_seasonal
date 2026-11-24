@@ -348,7 +348,7 @@ sig_feat_phen_joined <- log2FC_df |>
   inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
   select(metabolite.Feature, 
          `metabolite.MeanDecreaseAccuracy`, 
-         compound_class, 
+         compound_superclass, 
          refined_origin)
 
 sig_feat_phen_plot <- sig_feat_phen_joined |>
@@ -358,7 +358,7 @@ sig_feat_phen_plot <- sig_feat_phen_joined |>
 ggplot(sig_feat_phen_plot, 
        aes(x = reorder(metabolite.Feature, `metabolite.MeanDecreaseAccuracy`), 
            y = `metabolite.MeanDecreaseAccuracy`,
-           fill = compound_class
+           fill = compound_superclass
            )) +
   geom_col(
     ) +
@@ -366,10 +366,11 @@ ggplot(sig_feat_phen_plot,
   scale_fill_manual(values = named_palette) +
   
   coord_flip() +  # Flip for better readability
-  labs(title = "Variable Importance after rfPermute for Phenotype Classification",
+  labs(title = "Phenotype Classification",
        x = "Feature",
        y = "Mean Decrease in Accuracy") +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.position = "none")
 
 ```
 
@@ -446,7 +447,7 @@ significant_features_chlor_plot <- significant_features_chlor_plot |>
   select(metabolite.Feature, 
          `metabolite.X.IncMSE`, 
          Sign, 
-         compound_class, 
+         compound_superclass, 
          refined_origin)
 
 significant_features_chlor_plot <- significant_features_chlor_plot |>
@@ -461,7 +462,7 @@ significant_features_chlor_plot <- significant_features_chlor_plot |>
 ggplot(significant_features_chlor_plot, 
        aes(x = reorder(metabolite.Feature, `metabolite.X.IncMSE`), 
            y = `metabolite.X.IncMSE`,
-           fill = compound_class
+           fill = compound_superclass
            )) +
   
   geom_col() +
@@ -476,10 +477,11 @@ ggplot(significant_features_chlor_plot,
   geom_text(aes(label = Symbol), vjust = 0, hjust = 0, size = 4) +
   
   coord_flip() +  # Flip for better readability
-  labs(title = "Variable Importance after rfPermute for Chloropyll Regression",
+  labs(title = "Chloropyll Regression",
        x = "Feature",
        y = "Percent Increase in Mean Squared Error") +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.position = "none")
 ```
 
 ```{r}
