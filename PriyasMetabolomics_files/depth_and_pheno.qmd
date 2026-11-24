@@ -66,19 +66,19 @@ log2FC_df_dep <- data.frame(
 
 log2FC_df_dep_meta <- log2FC_df_dep |>
   inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
-  select(metabolite.Feature, metabolite.MeanDecreaseAccuracy, metabolite.MeanDecreaseGini, log2FC, compound_superclass, refined_origin, npc_number_superclass)
+  select(metabolite.Feature, feature_id, metabolite.MeanDecreaseAccuracy, metabolite.MeanDecreaseGini, log2FC, compound_superclass, refined_origin, npc_number_superclass)
 ```
 
 ```{r}
-library(ggpattern)
+#library(ggpattern)
 sig_feat_dep_plot <- log2FC_df_dep_meta |>
   arrange(desc(metabolite.MeanDecreaseAccuracy)) |>
   slice_head(n = 25) |>
      mutate(Sign = if_else(log2FC > 0, "Aposymbiotic", "Symbiotic"))
 
 
-ggplot(sig_feat_dep_plot, aes(
-  x = reorder(metabolite.Feature, metabolite.MeanDecreaseAccuracy), 
+vip_depthsa <- ggplot(sig_feat_dep_plot, aes(
+  x = reorder(feature_id, metabolite.MeanDecreaseAccuracy), 
   y = metabolite.MeanDecreaseAccuracy, 
   fill = compound_superclass)) +
   scale_fill_manual(values = named_palette) +
@@ -92,4 +92,6 @@ ggplot(sig_feat_dep_plot, aes(
        y = "Mean Decrease in Accuracy") +
   theme_minimal()+
   theme(legend.position = "none")
+
+vip_depthsa
 ```

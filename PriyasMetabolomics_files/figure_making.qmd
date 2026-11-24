@@ -36,20 +36,18 @@ cc_names <- c(
 "Unknown",
 "Digalactosyldiacylglycerol",
 "Linear polyketides",
-"sesquiterpenoids",
+"Sesquiterpenoids",
 "Carotenoids (C40)",
 "Oligopeptides",      
 "Diacylglyceryl-carboxyhydroxymethylcholines",    
 "Sphingolipids",      
-"Cholestane steroids",        
 "Triacylglycerols",       
 "Polyprenols" ,        
 "Monogalactosyldiacylglycerol",
 "Diacylglycerols",
 "Glycerophospholipids",
-"Glycosyldiacylglycerols",
-"N-acyl amines",
-"meroterpenoids",
+"Fatty amides",
+"Meroterpenoids",
 "Glycerolipids",
 "Steroids"
 )
@@ -88,8 +86,21 @@ print(named_palette)
 
 Dummy legend for variable importance plots
 
-```{r}
+```{r, fig.width = 10}
 
+feats_in_vip <- feats_stats |>
+  filter(compound_superclass %in% cc_names)
+
+feat_stat_plot <- ggplot(feats_in_vip, aes(x = sum, y = compound_superclass, fill = compound_superclass)) +
+  geom_col() +
+  scale_fill_manual(values = named_palette) +
+  theme(legend.position = "bottom")
+
+feat_stat_plot
+
+vip_leg <- get_legend(feat_stat_plot)
+
+vip_leg
 ```
 
 Figure (3?): Two PCoAs and 3-way Richness box plot
@@ -106,4 +117,17 @@ fig3
 
 ggsave(plot = fig3, "fig3_02.pdf", width=7.2, height=3.0, units=c("in"), dpi=300)
 #print(fig3)
+```
+
+Figure (4?) Four variable importance plots
+
+```{r}
+
+fig4 <- plot_grid(vip_phen, vip_depthsa, vip_chlor, vip_symbiont_density, vip_leg, nrow=3, rel_widths=c(1, 1, 1, 1, 1), align="h", label_size = 8, labels = c("A", "B", "C", "D"))
+
+fig0 <- plot_grid(vip_leg)
+
+fig0
+fig4
+
 ```

@@ -346,7 +346,8 @@ library(ggpattern)
 
 sig_feat_phen_joined <- log2FC_df |>
   inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
-  select(metabolite.Feature, 
+  select(metabolite.Feature,
+         feature_id,
          `metabolite.MeanDecreaseAccuracy`, 
          compound_superclass, 
          refined_origin)
@@ -355,8 +356,8 @@ sig_feat_phen_plot <- sig_feat_phen_joined |>
   arrange(desc(metabolite.MeanDecreaseAccuracy)) |>
   slice_head(n = 25)
 
-ggplot(sig_feat_phen_plot, 
-       aes(x = reorder(metabolite.Feature, `metabolite.MeanDecreaseAccuracy`), 
+vip_phen <- ggplot(sig_feat_phen_plot, 
+       aes(x = reorder(feature_id, `metabolite.MeanDecreaseAccuracy`), 
            y = `metabolite.MeanDecreaseAccuracy`,
            fill = compound_superclass
            )) +
@@ -371,6 +372,8 @@ ggplot(sig_feat_phen_plot,
        y = "Mean Decrease in Accuracy") +
   theme_minimal() +
   theme(legend.position = "none")
+
+vip_phen
 
 ```
 
@@ -445,6 +448,7 @@ significant_features_chlor_plot <- log2FC_df_chlor |>
 significant_features_chlor_plot <- significant_features_chlor_plot |>
   inner_join(feats_with_classes, join_by(metabolite.Feature == metabolite)) |>
   select(metabolite.Feature, 
+         feature_id,
          `metabolite.X.IncMSE`, 
          Sign, 
          compound_superclass, 
@@ -459,8 +463,8 @@ significant_features_chlor_plot <- significant_features_chlor_plot |>
 ```
 
 ```{r}
-ggplot(significant_features_chlor_plot, 
-       aes(x = reorder(metabolite.Feature, `metabolite.X.IncMSE`), 
+vip_chlor <- ggplot(significant_features_chlor_plot, 
+       aes(x = reorder(feature_id, `metabolite.X.IncMSE`), 
            y = `metabolite.X.IncMSE`,
            fill = compound_superclass
            )) +
@@ -482,6 +486,8 @@ ggplot(significant_features_chlor_plot,
        y = "Percent Increase in Mean Squared Error") +
   theme_minimal() +
   theme(legend.position = "none")
+
+vip_chlor
 ```
 
 ```{r}
