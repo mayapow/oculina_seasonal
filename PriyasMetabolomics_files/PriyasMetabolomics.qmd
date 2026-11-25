@@ -216,12 +216,14 @@ pcoa_oculina_fin_depthsa_no_out <-ggplot(data = pcoa_df_ocu_fin_depthsa_no_out, 
        y = paste("PC2 ", sprintf("%.1f%%", variance_explained_fin_depthsa_no_out[2])),
        color = "Symbiotic State"
        ) +
-  theme(plot.margin=ggplot2::margin(t=8,b=8,r=15,l=20,unit="pt"))
+  theme(plot.margin=ggplot2::margin(t=8,b=8,r=15,l=20,unit="pt")) +
+  theme(legend.position =  "none") 
 
 
 
    
 pcoa_oculina_fin_depthsa_no_out
+
 ```
 
 random forest model to predict bleaching phenotype using all metabolites **on 'oculina'**:

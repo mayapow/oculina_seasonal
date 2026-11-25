@@ -86,9 +86,9 @@ print(named_palette)
 
 Dummy legend for variable importance plots
 
-```{r, fig.width = 10}
+```{r, fig.width = 15}
 
-feats_in_vip <- feats_stats |>
+feats_in_vip <- feats_stats_oculina |>
   filter(compound_superclass %in% cc_names)
 
 feat_stat_plot <- ggplot(feats_in_vip, aes(x = sum, y = compound_superclass, fill = compound_superclass)) +
@@ -103,31 +103,72 @@ vip_leg <- get_legend(feat_stat_plot)
 vip_leg
 ```
 
-Figure (3?): Two PCoAs and 3-way Richness box plot
+dummy legend for figure 3
 
 ```{r}
+pcoa_dum <-ggplot(data = pcoa_df_ocu_fin_depthsa_no_out, aes(x = PC1, y = PC2, color = depth_sa)) + 
+  geom_point() +
+ 
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "hotpink3")) +
+  
+    theme_classic(base_size = 14) +
+  theme(plot.margin=ggplot2::margin(t=5,b=2,r=5,l=5,unit="pt"),
+        ) +
+  #theme(legend.position = "none") +
+
+  labs(
+       x = paste("PC1 ", sprintf("%.1f%%", variance_explained_fin_depthsa_no_out[1])),
+       y = paste("PC2 ", sprintf("%.1f%%", variance_explained_fin_depthsa_no_out[2])),
+       color = "Symbiotic State"
+       ) +
+  theme(plot.margin=ggplot2::margin(t=8,b=8,r=15,l=20,unit="pt")) +
+  theme(legend.position =  "bottom") 
+
+
+
+   
+pcoa_oculina_fin_depthsa_no_out
+pcoa_legend <- get_legend(pcoa_dum)
+pcoa_legend
+```
+
+Figure (2): Ella's two physio box plots, my richness box plot, my PCoA no outliers
+
+```{r}
+#chla_nov_depth_sa_box
+#sym_nov_depth_sa_box
 #richness_3_cat_box
-#pcoa_oculina_fin_depthsa
 #pcoa_oculina_fin_depthsa_no_out
 
 
-fig3 <- plot_grid(richness_3_cat_box, pcoa_oculina_fin_depthsa, pcoa_oculina_fin_depthsa_no_out, nrow=1, rel_widths=c(1, 1.2, 1.4), align="h", label_size = 8, labels = c("A", "B", "C"))
+fig2 <- plot_grid(chla_nov_depth_sa_box, sym_nov_depth_sa_box, richness_3_cat_box, pcoa_oculina_fin_depthsa_no_out, pcoa_legend,
+                  nrow=3, 
+                  rel_widths=c(1, 1, 1, 1, 0.2), 
+                  axis = "tblr", 
+                  align="v", 
+                  label_size = 8, 
+                  labels = c("A", "B", "C", "D"))
 
-fig3
+fig2
 
-ggsave(plot = fig3, "fig3_02.pdf", width=7.2, height=3.0, units=c("in"), dpi=300)
+ggsave(plot = fig2, "fig2_01.pdf", width=8, height=10.0, units=c("in"), dpi=300)
 #print(fig3)
 ```
 
 Figure (4?) Four variable importance plots
 
-```{r}
+```{r, fig.height = 10, fig.width = 12}
+fig4 <- plot_grid(vip_phen, vip_depthsa, vip_chlor, vip_symbiont_density, vip_leg,
+                  nrow=3, 
+                  rel_widths=c(1, 1, 1, 1, 1), 
+                  axis = "tblr", 
+                  align="hv", 
+                  label_size = 8, 
+                  labels = c("A", "B", "C", "D"))
 
-fig4 <- plot_grid(vip_phen, vip_depthsa, vip_chlor, vip_symbiont_density, vip_leg, nrow=3, rel_widths=c(1, 1, 1, 1, 1), align="h", label_size = 8, labels = c("A", "B", "C", "D"))
+#fig0 <- plot_grid(vip_leg)
 
-fig0 <- plot_grid(vip_leg)
-
-fig0
+#fig0
 fig4
 
 ```

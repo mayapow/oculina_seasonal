@@ -20,9 +20,48 @@ feats_with_classes <- read.csv("C:/Users/priya/Downloads/Ty_superset_metabolites
 ```
 
 ```{r}
-feats_stats <- feats_with_classes |>
+feats_stats_cotw <- feats_with_classes |>
   group_by(compound_superclass) |>
   summarise(sum = n())
+
+feats_classes_oculina <- feats_with_classes |>
+  filter(metabolite %in% colnames(ocu_final))
+
+feats_stats_oculina <- feats_classes_oculina |>
+  group_by(compound_superclass) |>
+  summarise(sum = n())
+```
+
+feature; compound class stat bar plots
+
+```{r, fig.height = 8}
+
+feats_stats_oculina_filtered <- feats_stats_oculina |>
+  filter(sum > 3)
+
+feat_stat_plot_all <- ggplot(feats_stats_oculina_filtered, aes(x = sum, y = compound_superclass, fill = compound_superclass)) +
+  geom_col() +
+  scale_fill_manual(values = named_palette) +
+  theme(legend.position = "bottom")
+
+feat_stat_plot_all
+
+```
+
+```{r, fig.height = 8}
+
+
+#removes the big unknown bar
+
+feats_stats_oculina_filtered_known <- feats_stats_oculina_filtered |>
+  filter(compound_superclass != "Unknown")
+
+feat_stat_plot_all_known <- ggplot(feats_stats_oculina_filtered_known, aes(x = sum, y = compound_superclass, fill = compound_superclass)) +
+  geom_col() +
+  scale_fill_manual(values = named_palette) +
+  theme(legend.position = "bottom")
+
+feat_stat_plot_all_known
 ```
 
 ```{r}
@@ -47,14 +86,14 @@ Oculina_long <- num_df_final_id |>
 
 ```{r}
 Oculina_joined <- Oculina_long %>%
-  left_join(feats_with_classes %>%
-              select(metabolite, compound_class),
+  left_join(feats_classes_oculina %>%
+              select(metabolite, compound_superclass),
             by = c("Metabolite" = "metabolite"))
 ```
 
 ```{r}
 Oculina_class <- Oculina_joined %>%
-  group_by(id, compound_class) %>%
+  group_by(id, compound_superclass) %>%
   summarise(Total_Abundance = sum(Abundance, na.rm = TRUE),
             .groups = "drop")
 ```
@@ -263,12 +302,12 @@ letters_df_richness <- data.frame(
 )
 ```
 
-**In Poster**
+**In Poster, (in figure?)**
 
 ```{r}
 #ocu_fin_div_depthsa <- ocu_fin_div_depthsa |>
  # filter(!is.na(depth_sa))
-richness_3_cat_box <- ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness, fill = depth_sa)) +
+richness_2_cat_box <- ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness, fill = depth_sa)) +
   geom_boxplot(outlier.shape = NA) +
   
   scale_fill_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "hotpink3")) +
@@ -276,7 +315,8 @@ richness_3_cat_box <- ggplot(ocu_fin_div_depthsa, aes(x = depth_sa, y = Richness
   theme_classic(base_size = 14) +
   theme(legend.position = "none") +
   
-  #theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.title.x = element_blank()) +
 
    geom_point(
     position = position_jitterdodge(
@@ -300,7 +340,7 @@ geom_text(data = letters_df_richness, aes(x = group, y = Inf, label = letter, vj
     fill = "Fragment symbiotic state"
   ) 
 
-richness_3_cat_box
+richness_2_cat_box
 ```
 
 ```{r}
@@ -322,7 +362,7 @@ ocu_fin_div_physio <- ocu_fin_div |>
 
 ```
 
-**In Poster**
+**In Poster, (in figure?)**
 
 ```{r}
 
@@ -334,7 +374,7 @@ ocu_fin_div_physio <- ocu_fin_div |>
 ocu_fin_div_physio_no_chlor_neg <- ocu_fin_div_physio |>
   mutate(ug_chla_cm = if_else(ug_chla_cm < 0, 0, ug_chla_cm))
 
-ggplot(ocu_fin_div_physio_no_chlor_neg, aes(x = Richness, y = ug_chla_cm, color = depth_sa)) +
+chlor_by_rich_plot <- ggplot(ocu_fin_div_physio_no_chlor_neg, aes(x = Richness, y = ug_chla_cm, color = depth_sa)) +
   geom_point() +
   
   geom_smooth(method = "loess", se = FALSE, color = "black") +
@@ -349,8 +389,11 @@ theme_classic(base_size = 14) +
   labs(
     x = "Metabolite Richness",
     y = "Chlorophyll a (ug per cm2)"
-  )
+  ) +
 
+theme(legend.position = "none")
+
+chlor_by_rich_plot
   
 ```
 
@@ -362,7 +405,7 @@ r_squared_sym_rich <- summary(model_sym_rich)$r.squared
 r2_label_sym_rich <- paste0("R^2 = ", round(r_squared_sym_rich, 3))
 
 
-ggplot(ocu_fin_div_physio, aes(x = Richness, y = sym_cm2, color = depth_sa)) +
+rich_sym_plot <- ggplot(ocu_fin_div_physio, aes(x = Richness, y = sym_cm2, color = depth_sa)) +
   geom_point() +
   
   geom_smooth(method = "lm", se = FALSE, color = "black") +
@@ -371,7 +414,13 @@ ggplot(ocu_fin_div_physio, aes(x = Richness, y = sym_cm2, color = depth_sa)) +
   
  #annotate("text", label = r2_label_sym_rich, x = -Inf, y = Inf, size = 5, hjust = -0.1, vjust = 1.1) +
   
-  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "hotpink3"))
+  scale_color_manual(values = c("Shallow Aposymbiotic" = "orange", "Shallow Symbiotic" = "blue", "Deep Aposymbiotic" = "hotpink3")) +
+  theme(legend.position = "bottom")
+
+rich_sym_plot
+
+rich_sym_legend <- get_legend(rich_sym_plot)
+rich_sym_legend
 ```
 
 ```{r}

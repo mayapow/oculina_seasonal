@@ -129,7 +129,7 @@ significant_features_sym_plot <- significant_features_sym_plot |>
 
 ```{r}
 
-#library(ggpattern)
+library(ggpattern)
 
 
 vip_symbiont_density <- ggplot(significant_features_sym_plot, 
